@@ -1,49 +1,35 @@
 package Commands;
 
-public class PrintEcho extends Command {
+import picocli.CommandLine;
+import picocli.CommandLine.*;
 
-    String[] args;
+import java.util.concurrent.Callable;
 
-    public PrintEcho(String[] args){
-        this.args = args;
+@Command(description = "Prints (echoes) the provided string.",
+        name = "printecho", mixinStandardHelpOptions = true)
+public class PrintEcho implements Callable<Integer> {
+
+    @Option(names = {"-d", "--delay"}, description = "echo delay (ms) [ei tee midagi]")
+    private int delay = 0;
+
+    @Parameters(paramLabel = "STRING", description = "string to echo", arity = "1")
+    private String msg;
+
+    /*@Option(names = {"-h", "--help"}, usageHelp = true, description = "display a help message")
+    private boolean helpRequested = false;*/
+
+    public static void main(String[] args) {
+        System.exit(new CommandLine(new PrintEcho()).execute(args));
     }
 
     @Override
-    public int task() {
-        if(!hasCorrectInput()) return -1;
-
-        StringBuilder builder = new StringBuilder();
-
-        for (String arg : args) {
-            builder.append(arg);
-        }
-        System.out.println(builder);
-
-        return 1;
-    }
-
-    @Override
-    public boolean hasCorrectInput() {
-        return this.args.length > 0;
-    }
-
-    @Override
-    public String errorMsg() {
-        return "null\n" + usage();
-    }
-
-    @Override
-    public String usage() {
-        return "Usage: printecho arg1 arg2 arg3 ...";
-    }
-
-    @Override
-    public String wrongInputErrorMsg() {
-        return "PrintEcho requires at least one argument.\n" + usage();
+    public Integer call(){
+        System.out.println(this.msg);
+        return 0;
     }
 
     @Override
     public String toString() {
-        return "Outputs all inputs given by the user.\n" + usage();
+        return super.toString();
     }
 }
