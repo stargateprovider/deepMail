@@ -146,6 +146,11 @@ public class ReadMail implements Callable<Integer> {
         }
     }
 
+    /***
+     * Kustuab valitud emaili, küsitakse ühe korra kasutajalt ka nõusolekut.
+     * näidissüntaks: delete -i <number>
+     */
+
     @Command(name = "delete", mixinStandardHelpOptions = true)
     class DeleteMsg implements Callable<Integer>{
 
