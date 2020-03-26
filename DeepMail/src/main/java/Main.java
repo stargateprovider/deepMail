@@ -12,6 +12,7 @@ public class Main {
         HashMap<String, Callable<Integer>> commands = new HashMap<>();
         commands.put("printecho", new PrintEcho());
         commands.put("readmail", new ReadMail());
+        commands.put("sendmail", new SendMail());
 
         CommandExecutor cmdExecutor = new CommandExecutor(commands);
         cmdExecutor.run();
