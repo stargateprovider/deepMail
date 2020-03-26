@@ -1,7 +1,11 @@
 import picocli.CommandLine;
 import Commands.*;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 
 public class Main {
@@ -10,12 +14,32 @@ public class Main {
         //test();
 
         HashMap<String, Callable<Integer>> commands = new HashMap<>();
-        commands.put("printecho", new PrintEcho());
-        commands.put("readmail", new ReadMail());
-        commands.put("sendmail", new SendMail());
+        commands.put("addCommand", new CommandAdder());
+        readCommands(commands);
+        //commands.put("printecho", new PrintEcho());
+        //commands.put("readmail", new ReadMail());
 
         CommandExecutor cmdExecutor = new CommandExecutor(commands);
         cmdExecutor.run();
+    }
+
+    private static void readCommands(HashMap<String, Callable<Integer>> commands) {
+        try(Scanner scanner = new Scanner(new File("commands.txt"))){
+            while (scanner.hasNextLine()){
+                String[] lineData = scanner.nextLine().split(" ");
+                try {
+                    Class<?> cl = Class.forName("Commands." + lineData[1]); //Kõik commandid peavad olema commands packages
+                    commands.put(lineData[0],(Callable<Integer>) cl.getConstructor().newInstance());
+                } catch (ClassNotFoundException | NoSuchMethodException e) {
+                    System.out.println("Failed to read class from name : " + lineData[1]);
+                } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                    System.out.println("Failed to create command Object from class: " + lineData[1]);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Commands file not found");
+
+        }
     }
 
     public static void printHeader(int width) {

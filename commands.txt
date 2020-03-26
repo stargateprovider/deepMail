@@ -1,0 +1,2 @@
+printecho PrintEcho
+readmail ReadMail
