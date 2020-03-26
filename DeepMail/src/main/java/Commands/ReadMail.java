@@ -6,9 +6,7 @@ import picocli.CommandLine.*;
 
 import javax.mail.*;
 import java.awt.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -27,6 +25,8 @@ public class ReadMail implements Callable<Integer> {
 
     Message[] messages;
 
+    IMAPFolder folder;
+
     public static void main(String[] args) {
         new CommandLine(new ReadMail()).execute(args);
     }
@@ -38,7 +38,7 @@ public class ReadMail implements Callable<Integer> {
 
         Session session = Session.getDefaultInstance(props, null);
         Store store = null;
-        IMAPFolder folder = null;
+        folder = null;
         try {
             store = session.getStore("imaps");
             store.connect(args[0], args[1], String.valueOf(password));
@@ -60,14 +60,14 @@ public class ReadMail implements Callable<Integer> {
             commands.put("print", new ReadMsg());
             //commands.put("reply", new ReplyMsg());
             //commands.put("write", new WriteMsg());
-            //commands.put("delete", new DeleteMsg());
+            commands.put("delete", new DeleteMsg());
 
             CommandExecutor cmdExecutor = new CommandExecutor(commands);
             cmdExecutor.run();
             System.out.println("Logged out");
         } finally {
-            if (folder != null && folder.isOpen()) folder.close(true);
-            if (store != null) store.close();
+            //if (folder != null && folder.isOpen()) folder.close(true);
+            //if (store != null) store.close();
         }
         return 0;
     }
@@ -143,6 +143,46 @@ public class ReadMail implements Callable<Integer> {
                 }
             }
             return null;
+        }
+    }
+
+    @Command(name = "delete", mixinStandardHelpOptions = true)
+    class DeleteMsg implements Callable<Integer>{
+
+        @Option(names = {"-i", "--number"}, required = true, arity = "1..*")
+        int msgNumber;
+
+        @Override
+        public Integer call() {
+            Message msg = messages[msgNumber-1];
+
+            try {
+                System.out.println("Subject: " + msg.getSubject());
+                System.out.println("From: " + Arrays.toString(msg.getFrom()));
+
+                System.out.println("Are you sure you want to delete this email? (Y/N)");
+
+                String result = new BufferedReader(new InputStreamReader(System.in)).readLine();
+                if(result.toLowerCase().equals("y")) {
+
+                    msg.setFlag(Flags.Flag.DELETED, true);
+                    if(folder.isOpen()){
+                        folder.expunge();
+                        System.out.println("Email is deleted!");
+                    }
+                    else{
+                        System.out.println("Email deletion failed!");
+                    }
+                }
+
+
+            } catch (MessagingException | IOException e) {
+                e.printStackTrace();
+                return 1;
+            }
+
+
+            return 0;
         }
     }
 }
