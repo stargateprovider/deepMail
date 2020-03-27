@@ -3,7 +3,9 @@ package Commands;
 
 import picocli.CommandLine;
 
+import java.io.Console;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.regex.MatchResult;
@@ -18,8 +20,15 @@ public class CommandExecutor {
 
     public CommandExecutor(HashMap<String, Callable<Integer>> commands) {
         this.commands = commands;
-        this.commands.put("back", new Back());
-        this.commands.put("close", new Back());
+
+        Back backCmd = new Back();
+        this.commands.put("back", backCmd);
+        this.commands.put("close", backCmd);
+        String helpMsg = "Available commands:\n" + String.join("|", commands.keySet().toArray(String[]::new));
+
+        Help helpCmd = new Help(helpMsg);
+        this.commands.put("help", helpCmd);
+        this.commands.put("?", helpCmd);
     }
 
     public void run() {
@@ -32,6 +41,9 @@ public class CommandExecutor {
     }
 
     public int execute(String cmdName, String argsString) {
+        if (cmdName.isEmpty()) {
+            return 0;
+        }
         if (commands.containsKey(cmdName)) {
             String[] options = new String[0];
             if (!argsString.isEmpty()) {
@@ -54,5 +66,40 @@ public class CommandExecutor {
             return execute(input[0], input[1]);
         }
         return execute(input[0], "");
+    }
+
+    public static int quickChoice(List<String> options, String separator) {
+        String optionsString = "";
+        for (int i = 0; i < options.size(); i++) {
+            optionsString += (i+1) + ") " + options.get(i);
+            if (i+1 < options.size()) {
+                optionsString += separator;
+            }
+        }
+        System.out.print(optionsString + "\nEnter nr: ");
+
+        while (true) {
+            String input = globalScanner.nextLine();
+            if (input.matches("\\d+")) {
+                int option = Integer.parseInt(input);
+                if (0 < option && option <= options.size())
+                    return option - 1;
+            }
+            System.out.print("No such option.\n> ");
+        }
+    }
+
+    public static String quickInput(String prompt) {
+        System.out.print(prompt);
+        return globalScanner.nextLine();
+    }
+
+    public static char[] readPassword() {
+        System.out.print("Enter password: ");
+        Console console = System.console();
+        if (console != null) {
+            return console.readPassword();
+        }
+        return globalScanner.nextLine().toCharArray();
     }
 }

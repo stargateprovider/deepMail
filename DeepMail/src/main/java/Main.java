@@ -46,7 +46,6 @@ public class Main {
         System.out.println("=".repeat(width));
         System.out.printf("%" + width / 2 + "s%-" + width / 2 + "s\n", "Deep", "Mail");
         System.out.println("=".repeat(width));
-        //String cmds = String.join("|", "list", "read", "sync", "write");
     }
 
     @CommandLine.Command(name = "test", mixinStandardHelpOptions = true)
