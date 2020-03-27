@@ -18,6 +18,7 @@ public class CommandExecutor {
     HashMap<String, Callable<Integer>> commands;
     static Scanner globalScanner = new Scanner(System.in);
 
+    // Loob antud commandidega käsurea
     public CommandExecutor(HashMap<String, Callable<Integer>> commands) {
         this.commands = commands;
 
@@ -31,6 +32,7 @@ public class CommandExecutor {
         this.commands.put("?", helpCmd);
     }
 
+    // Käivitab käsurea
     public void run() {
         int result = 0;
         while (result != -1) {
@@ -68,6 +70,7 @@ public class CommandExecutor {
         return execute(input[0], "");
     }
 
+    // Numbriga loendist valimine
     public static int quickChoice(List<String> options, String separator) {
         String optionsString = "";
         for (int i = 0; i < options.size(); i++) {

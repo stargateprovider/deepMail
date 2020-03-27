@@ -6,6 +6,7 @@ import java.util.HashMap;
 public class MailTools {
     static final String[] outlookServers = new String[]{"imap-mail.outlook.com", "smtp-mail.outlook.com"};
 
+    // Populaarsed meilipakkujate serverid kujul <meiliaadressi sufiks>: {IMAP aadress, SMTP aadress}
     public static final HashMap<String, String[]> mailServers = new HashMap<>() {{
         put("gmail",        new String[]{"imap.gmail.com", "smtp.gmail.com"});
         put("yahoo",        new String[]{"imap.mail.yahoo.com", "smtp.mail.yahoo.com"});
