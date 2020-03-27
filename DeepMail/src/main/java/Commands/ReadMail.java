@@ -210,15 +210,20 @@ public class ReadMail implements Callable<Integer> {
 
                 System.out.println("Are you sure you want to mark this email as a spam? (Y/N)");
 
-                String result = new BufferedReader(new InputStreamReader(System.in)).readLine();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+                String result = bufferedReader.readLine();
                 if(result.toLowerCase().equals("y")) {
                     Folder[] folders = store.getDefaultFolder().list("*");
-                    for (Folder value : folders) {
-                        System.out.println(value.getName());
+                    System.out.println("Valige enda spam folder (number sisestage)");
+                    for (int i = 0; i<folders.length; i++) {
+                        if(i != 1) //Sellel indeksil on emaili serveri enda emakausta nimi nagu näiteks [Gmail], seega seda ei ole vaja valida
+                            System.out.println(i+1 + ": " + folders[i].getName());
                     }
+                    int indeks = Integer.parseInt(bufferedReader.readLine())-1;
+
 
                     if(folder.isOpen()){
-                        folder.moveMessages(new Message[]{msg}, store.getFolder("[Gmail]/Rämpspost"));
+                        folder.moveMessages(new Message[]{msg}, store.getFolder(folders[1].getName()+"/"+folders[indeks].getName()));
                         System.out.println("Email is now in spam folder!");
                     }
                     else{
