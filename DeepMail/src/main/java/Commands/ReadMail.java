@@ -68,6 +68,7 @@ public class ReadMail implements Callable<Integer> {
             //commands.put("write", new WriteMsg());
             commands.put("delete", new DeleteMsg());
             commands.put("folder", new SelectFolder());
+            commands.put("spam", new SpamMsg());
 
             CommandExecutor cmdExecutor = new CommandExecutor(commands);
             cmdExecutor.run();
@@ -220,6 +221,52 @@ public class ReadMail implements Callable<Integer> {
             }
 
 
+            return 0;
+        }
+    }
+
+    @Command(name = "spam", mixinStandardHelpOptions = true)
+    class SpamMsg implements Callable<Integer>{
+
+        @Option(names = {"-i", "--number"}, required = true, arity = "1..*")
+        int msgNumber;
+
+
+        @Override
+        public Integer call(){
+            Message msg = messages[msgNumber-1];
+
+            try{
+                System.out.println("Subject: " + msg.getSubject());
+                System.out.println("From: " + Arrays.toString(msg.getFrom()));
+
+                System.out.println("Are you sure you want to mark this email as a spam? (Y/N)");
+
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+                String result = bufferedReader.readLine();
+                if(result.toLowerCase().equals("y")) {
+                    Folder[] folders = store.getDefaultFolder().list("*");
+                    System.out.println("Valige enda spam folder (number sisestage)");
+                    for (int i = 0; i<folders.length; i++) {
+                        if(i != 1) //Sellel indeksil on emaili serveri enda emakausta nimi nagu näiteks [Gmail], seega seda ei ole vaja valida
+                            System.out.println(i+1 + ": " + folders[i].getName());
+                    }
+                    int indeks = Integer.parseInt(bufferedReader.readLine())-1;
+
+
+                    if(currentFolder.isOpen()){
+                        currentFolder.moveMessages(new Message[]{msg}, store.getFolder(folders[1].getName()+"/"+folders[indeks].getName()));
+                        System.out.println("Email is now in spam folder!");
+                    }
+                    else{
+                        System.out.println("Email marking as spam ended with a failure!");
+                    }
+                }
+
+            }catch (MessagingException | IOException e){
+                System.out.println("SOmething went wrong with spam emails");
+                return 1;
+            }
             return 0;
         }
     }
