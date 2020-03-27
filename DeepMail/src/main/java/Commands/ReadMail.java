@@ -26,6 +26,7 @@ public class ReadMail implements Callable<Integer> {
     Message[] messages;
 
     IMAPFolder folder;
+    Store store;
 
     public static void main(String[] args) {
         new CommandLine(new ReadMail()).execute(args);
@@ -37,7 +38,7 @@ public class ReadMail implements Callable<Integer> {
         props.setProperty("mail.store.protocol", "imaps");
 
         Session session = Session.getDefaultInstance(props, null);
-        Store store = null;
+        store = null;
         folder = null;
         try {
             store = session.getStore("imaps");
@@ -61,6 +62,7 @@ public class ReadMail implements Callable<Integer> {
             //commands.put("reply", new ReplyMsg());
             //commands.put("write", new WriteMsg());
             commands.put("delete", new DeleteMsg());
+            commands.put("spam", new SpamMsg());
 
             CommandExecutor cmdExecutor = new CommandExecutor(commands);
             cmdExecutor.run();
@@ -187,6 +189,47 @@ public class ReadMail implements Callable<Integer> {
             }
 
 
+            return 0;
+        }
+    }
+
+    @Command(name = "spam", mixinStandardHelpOptions = true)
+    class SpamMsg implements Callable<Integer>{
+
+        @Option(names = {"-i", "--number"}, required = true, arity = "1..*")
+        int msgNumber;
+
+
+        @Override
+        public Integer call(){
+            Message msg = messages[msgNumber-1];
+
+            try{
+                System.out.println("Subject: " + msg.getSubject());
+                System.out.println("From: " + Arrays.toString(msg.getFrom()));
+
+                System.out.println("Are you sure you want to mark this email as a spam? (Y/N)");
+
+                String result = new BufferedReader(new InputStreamReader(System.in)).readLine();
+                if(result.toLowerCase().equals("y")) {
+                    Folder[] folders = store.getDefaultFolder().list("*");
+                    for (Folder value : folders) {
+                        System.out.println(value.getName());
+                    }
+
+                    if(folder.isOpen()){
+                        folder.moveMessages(new Message[]{msg}, store.getFolder("[Gmail]/Rämpspost"));
+                        System.out.println("Email is now in spam folder!");
+                    }
+                    else{
+                        System.out.println("Email marking as spam ended with a failure!");
+                    }
+                }
+
+            }catch (MessagingException | IOException e){
+                System.out.println("SOmething went wrong with spam emails");
+                return 1;
+            }
             return 0;
         }
     }
