@@ -23,7 +23,8 @@ public class ReadMail implements Callable<Integer> {
     String server;
 
     Message[] messages;
-    int currentMessageIndex = 0;
+    int firstMessageIndex = 0;
+    int lastMessageIndex = 0;
     Store store;
     IMAPFolder currentFolder;
     ArrayList<Folder> folders;
@@ -69,7 +70,7 @@ public class ReadMail implements Callable<Integer> {
             //commands.put("write", new WriteMsg());
             commands.put("delete", new DeleteMsg());
             commands.put("folder", new SelectFolder());
-            commands.put("spam", new SpamMsg());
+            commands.put("move", new MoveMsg());
             commands.put("next", new NextMsgs());
             commands.put("previous", new PreviousMsgs());
 
@@ -88,19 +89,20 @@ public class ReadMail implements Callable<Integer> {
     public void getMessages(int count) throws MessagingException {
         int i, limit;
 
+
+
         if(count > 0){
-            i = messages.length-currentMessageIndex;
+            i = messages.length-lastMessageIndex;
             limit = Math.max(i - count, 0);
-            currentMessageIndex = limit == 0 ? messages.length : currentMessageIndex + count;
         }else{
-            i = messages.length-currentMessageIndex-count;
+            i = messages.length-firstMessageIndex-count;
             if(i > messages.length)
                 i = messages.length;
-            currentMessageIndex = messages.length -i;
-            limit = Math.max(i-Math.abs(count), 0);
+            limit = messages.length - firstMessageIndex;
 
         }
-        int start = i;
+        int start = i; //Kasutajale tagasiside andmiseks
+        firstMessageIndex = messages.length-i;
 
         while(i>limit) {
             Message msg = messages[i - 1];
@@ -115,6 +117,7 @@ public class ReadMail implements Callable<Integer> {
                     + "\n\t" + newPrefix + "Date: " + msg.getSentDate());
             i--;
         }
+        lastMessageIndex = messages.length-i;
         System.out.println(start-limit + " messages read out of " + messages.length);
     }
 
@@ -244,8 +247,11 @@ public class ReadMail implements Callable<Integer> {
         }
     }
 
-    @Command(name = "spam", mixinStandardHelpOptions = true)
-    class SpamMsg implements Callable<Integer>{
+    /**
+     * Peamine eesmärk on liigutada kirju spam folderisse, aga võib ka mõnda teisse folderisse liigutada.
+     */
+    @Command(name = "move", mixinStandardHelpOptions = true)
+    class MoveMsg implements Callable<Integer>{
 
         @Option(names = {"-i", "--number"}, required = true, arity = "1..*")
         int msgNumber;
@@ -259,31 +265,31 @@ public class ReadMail implements Callable<Integer> {
                 System.out.println("Subject: " + msg.getSubject());
                 System.out.println("From: " + Arrays.toString(msg.getFrom()));
 
-                System.out.println("Are you sure you want to mark this email as a spam? (Y/N)");
+                System.out.println("Are you sure you want to move this email to another folder? (Y/N)");
 
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
                 String result = bufferedReader.readLine();
                 if(result.toLowerCase().equals("y")) {
-                    Folder[] folders = store.getDefaultFolder().list("*");
-                    System.out.println("Valige enda spam folder (number sisestage)");
-                    for (int i = 0; i<folders.length; i++) {
-                        if(i != 1) //Sellel indeksil on emaili serveri enda emakausta nimi nagu näiteks [Gmail], seega seda ei ole vaja valida
-                            System.out.println(i+1 + ": " + folders[i].getName());
+                    System.out.println("Choose your folder (insert number)");
+                    for (int i = 0; i<folders.size(); i++) {
+                        System.out.println(i+1 + ": " + folders.get(i).getFullName());
                     }
                     int indeks = Integer.parseInt(bufferedReader.readLine())-1;
 
 
                     if(currentFolder.isOpen()){
-                        currentFolder.moveMessages(new Message[]{msg}, store.getFolder(folders[1].getName()+"/"+folders[indeks].getName()));
-                        System.out.println("Email is now in spam folder!");
+                        currentFolder.moveMessages(new Message[]{msg}, store.getFolder(folders.get(indeks).getFullName()));
+                        System.out.println("Email is now in " + folders.get(indeks).getName() + " folder!");
                     }
                     else{
-                        System.out.println("Email marking as spam ended with a failure!");
+                        System.out.println("Email moving ended with a failure!");
+                        System.out.println("Connection to your folder is lost.");
+                        return 1;
                     }
                 }
 
             }catch (MessagingException | IOException e){
-                System.out.println("SOmething went wrong with spam emails");
+                System.out.println("Check the folder you chose. Folders like drafts folder aren't accepted");
                 return 1;
             }
             return 0;
@@ -314,6 +320,9 @@ public class ReadMail implements Callable<Integer> {
         }
     }
 
+    /**
+     * Loeb argumendina antud arv järgmisi emaile, kui argumenti ei anta, siis default on 10 emaili.
+     */
     @Command(name = "next", mixinStandardHelpOptions = true)
     class NextMsgs implements Callable<Integer>{
 
@@ -335,6 +344,9 @@ public class ReadMail implements Callable<Integer> {
         }
     }
 
+    /**
+     * Loeb argumendina antud arv eelmisi emaile, kui argumenti ei anta, siis default on 10 emaili.
+     */
     @Command(name = "previous", mixinStandardHelpOptions = true)
     class PreviousMsgs implements Callable<Integer>{
 
