@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
  * Loob programmi sees käsurea, millelt võib etteantud käske sisestada
  */
 public class CommandExecutor {
+    static Credentials credentials = null;
     HashMap<String, Callable<Integer>> commands;
     static Scanner globalScanner = new Scanner(System.in);
 

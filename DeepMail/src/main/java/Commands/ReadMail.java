@@ -17,10 +17,10 @@ import java.util.concurrent.Callable;
  */
 @Command(name = "readmail", mixinStandardHelpOptions = true)
 public class ReadMail implements Callable<Integer> {
-    @Parameters(arity="1")
-    String email;
-    @Option(names = {"-s", "--server"}, description = "Incoming mail server", defaultValue = "")
-    String server;
+//    @Parameters(arity="1")
+//    String email;
+//    @Option(names = {"-s", "--server"}, description = "Incoming mail server", defaultValue = "")
+//    String server;
 
     Message[] messages;
     int firstMessageIndex = 0;
@@ -36,8 +36,14 @@ public class ReadMail implements Callable<Integer> {
 
     @Override
     public Integer call() throws MessagingException {
-        if (server.isEmpty())
-            server = MailTools.identifyMailServer(email, true);
+//        if (server.isEmpty())
+//            server = MailTools.identifyMailServer(email, true);
+        if (CommandExecutor.credentials == null) {
+            System.out.println("Use the \"login\" command first!");
+            return 0;
+        }
+        String email = CommandExecutor.credentials.getUsername();
+        String server = CommandExecutor.credentials.getImapServer();
 
         Properties props = System.getProperties();
         props.setProperty("mail.store.protocol", "imaps");
@@ -48,8 +54,8 @@ public class ReadMail implements Callable<Integer> {
         Session session = Session.getInstance(props, null);
         try {
             store = session.getStore("imaps");
-            store.connect(server, email, String.valueOf(CommandExecutor.readPassword()));
-            System.out.println("Logged in as " + email);
+            store.connect(server, email, String.valueOf(CommandExecutor.credentials.getPassword()));
+            //System.out.println("Logged in as " + email);
 
             // Kausta valimine
             folders = new ArrayList<>();
@@ -76,7 +82,7 @@ public class ReadMail implements Callable<Integer> {
 
             CommandExecutor cmdExecutor = new CommandExecutor(commands);
             cmdExecutor.run();
-            System.out.println("Logged out");
+            //System.out.println("Logged out");
         } /* LISA TINGIMUS: KUI ON UUS GMAIL KASUTAJA>> catch (AuthenticationFailedException e){
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
                 Desktop.getDesktop().browse(URI.create("https://myaccount.google.com/lesssecureapps"));
