@@ -10,6 +10,8 @@ import java.util.concurrent.Callable;
 
 /*
 *  Lisab commandide faili commandi kus selle klassinimega.
+* Eesmärk sellel on see, et saaks võimalusel kergelt hakata kontrollima, kellel, mis commandid on lubatud, et näiteks adminil on rohkem commande, mida kasutada, kui teistel
+* Hetkel veel eelmise rea eesmärk on realiseerimata, aga kui tekib esmane vajadus, siis saab kohe ära teha.
  */
 @CommandLine.Command(name = "addCommand", mixinStandardHelpOptions = false)
 public class CommandAdder implements Callable<Integer> {

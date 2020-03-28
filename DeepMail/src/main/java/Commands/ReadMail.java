@@ -23,6 +23,7 @@ public class ReadMail implements Callable<Integer> {
     String server;
 
     Message[] messages;
+    int currentMessageIndex = 0;
     Store store;
     IMAPFolder currentFolder;
     ArrayList<Folder> folders;
@@ -69,6 +70,8 @@ public class ReadMail implements Callable<Integer> {
             commands.put("delete", new DeleteMsg());
             commands.put("folder", new SelectFolder());
             commands.put("spam", new SpamMsg());
+            commands.put("next", new NextMsgs());
+            commands.put("previous", new PreviousMsgs());
 
             CommandExecutor cmdExecutor = new CommandExecutor(commands);
             cmdExecutor.run();
@@ -82,10 +85,24 @@ public class ReadMail implements Callable<Integer> {
         return 0;
     }
 
-    public void getMessages() throws MessagingException {
-        messages = currentFolder.getMessages();
+    public void getMessages(int count) throws MessagingException {
+        int i, limit;
 
-        for (int i = messages.length; i > 0; i--) {
+        if(count > 0){
+            i = messages.length-currentMessageIndex;
+            limit = Math.max(i - count, 0);
+            currentMessageIndex = limit == 0 ? messages.length : currentMessageIndex + count;
+        }else{
+            i = messages.length-currentMessageIndex-count;
+            if(i > messages.length)
+                i = messages.length;
+            currentMessageIndex = messages.length -i;
+            limit = Math.max(i-Math.abs(count), 0);
+
+        }
+        int start = i;
+
+        while(i>limit) {
             Message msg = messages[i - 1];
 
             String newPrefix = "";
@@ -96,7 +113,9 @@ public class ReadMail implements Callable<Integer> {
             System.out.println(i + ".\tFrom: " + Arrays.toString(msg.getFrom())
                     + "\n\tSubject: " + msg.getSubject()
                     + "\n\t" + newPrefix + "Date: " + msg.getSentDate());
+            i--;
         }
+        System.out.println(start-limit + " messages read out of " + messages.length);
     }
 
     public void close() throws MessagingException {
@@ -289,8 +308,50 @@ public class ReadMail implements Callable<Integer> {
             currentFolder = (IMAPFolder) store.getFolder(folderName);
             if (!currentFolder.isOpen())
                 currentFolder.open(Folder.READ_WRITE);
+            messages = currentFolder.getMessages();
 
-            getMessages();
+            return new NextMsgs().call();
+        }
+    }
+
+    @Command(name = "next", mixinStandardHelpOptions = true)
+    class NextMsgs implements Callable<Integer>{
+
+        @Option(names = {"-c"}, description = "Number of messages read", defaultValue = "10")
+        int msgsCount = 10;
+
+
+        @Override
+        public Integer call(){
+
+            try {
+                getMessages(msgsCount);
+            } catch (MessagingException e) {
+                System.out.println("Failed to read " + msgsCount + " at once");
+                return 1;
+            }
+
+            return 0;
+        }
+    }
+
+    @Command(name = "previous", mixinStandardHelpOptions = true)
+    class PreviousMsgs implements Callable<Integer>{
+
+        @Option(names = {"-c"}, description = "Number of messages read", defaultValue = "10")
+        int msgsCount;
+
+
+        @Override
+        public Integer call(){
+
+            try {
+                getMessages(-1*msgsCount);
+            } catch (MessagingException e) {
+                System.out.println("Failed to read " + msgsCount + " at once");
+                return 1;
+            }
+
             return 0;
         }
     }
