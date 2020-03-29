@@ -1,0 +1,1 @@
+java -cp %USERPROFILE%\.m2\repository\info\picocli\picocli\4.2.0\picocli-4.2.0.jar;%USERPROFILE%\.m2\repository\com\sun\mail\javax.mail\1.6.2\javax.mail-1.6.2.jar;%USERPROFILE%\.m2\repository\javax\activation\activation\1.1\activation-1.1.jar;%USERPROFILE%\prog\java\deepMail\DeepMail\target\classes Main
