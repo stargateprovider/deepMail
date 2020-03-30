@@ -29,6 +29,7 @@ public class CommandAdder implements Callable<Integer> {
             printWriter.flush();
             System.out.println("Töötas");
 
+
         }catch (IOException e){
             System.out.println("ERROR: Faili ei leitud"); //Teha/kasutada mõnda teist commandi error handlemiseks?!?
             return 1;
