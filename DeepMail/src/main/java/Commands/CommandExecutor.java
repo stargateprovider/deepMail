@@ -8,15 +8,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-/**
+/**x
  * Loob programmi sees käsurea, millelt võib etteantud käske sisestada
  */
 public class CommandExecutor {
     static Credentials credentials = null;
     HashMap<String, Callable<Integer>> commands;
+    HashMap<String, Function<?, Integer>> functionCommands;
     static Scanner globalScanner = new Scanner(System.in);
 
     // Loob antud commandidega käsurea
