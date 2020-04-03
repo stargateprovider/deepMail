@@ -13,11 +13,13 @@ public class Main {
         printHeader(30);
         //test();
 
-        HashMap<String, Callable<Integer>> commands = new HashMap<>();
-        commands.put("addCommand", new CommandAdder());
-        readCommands(commands);
-        //commands.put("printecho", new PrintEcho());
-        //commands.put("readmail", new ReadMail());
+        HashMap<String, Callable<Integer>> commands = new HashMap<>(){{
+            put("login", new Login());
+            put("sendmail", new SendMail());
+            put("echo", new PrintEcho());
+            //put("test", Main::test);
+        }};
+        //commands.put("addCommand", new CommandAdder());
 
         CommandExecutor cmdExecutor = new CommandExecutor(commands);
         cmdExecutor.run();
@@ -49,7 +51,7 @@ public class Main {
     }
 
     @CommandLine.Command(name = "test", mixinStandardHelpOptions = true)
-    public static void test() {
+    public static Integer test() {
         String[] test1 = {"Hello World"};
         String[] test2 = {"-h"};
         String[] test3 = {"-p", "Hello?"};
@@ -68,5 +70,7 @@ public class Main {
         System.out.println("\n-------------------------------\n");
         System.out.println("Test 3");
         new CommandLine(new PrintEcho()).execute(test3);
+
+        return 0;
     }
 }
