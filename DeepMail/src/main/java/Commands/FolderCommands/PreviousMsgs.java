@@ -17,11 +17,11 @@ public class PreviousMsgs extends ScrollMessages {
     @Override
     void scrollToRange() throws MessagingException {
         if (msgsCount > 0 && numberOfMessages > 0 && firstMessageIndex > 0){
-            lastMessageIndex = firstMessageIndex;
-            firstMessageIndex = max(firstMessageIndex - msgsCount, 0);
+            lastMessageIndex = firstMessageIndex - 1;
+            firstMessageIndex = max(firstMessageIndex - msgsCount + 1, 0);
             showMessages();
 
-        } else if (lastMessageIndex == numberOfMessages - 1) {
+        } else if (firstMessageIndex == 0) {
             System.out.println("Already at beginning of messages.");
         }
     }

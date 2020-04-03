@@ -97,10 +97,11 @@ public class Login implements Callable<Integer> {
     }
 
     public void close() throws MessagingException {
-        if (folderNav.currentFolder != null && folderNav.currentFolder.isOpen())
+        if (folderNav != null && folderNav.currentFolder != null && folderNav.currentFolder.isOpen())
             folderNav.currentFolder.close(true);
         if (store != null)
             store.close();
+        CommandExecutor.credentials = null;
     }
 
 

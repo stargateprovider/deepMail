@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
 public class CommandExecutor {
     static Credentials credentials = null;
     HashMap<String, Callable<Integer>> commands;
-    HashMap<String, Function<?, Integer>> functionCommands;
     static Scanner globalScanner = new Scanner(System.in);
 
     // Loob antud commandidega käsurea

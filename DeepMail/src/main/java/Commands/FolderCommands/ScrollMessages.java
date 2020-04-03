@@ -15,8 +15,8 @@ public abstract class ScrollMessages implements Callable<Integer> {
 
     FolderNavigation folderNav;
     int numberOfMessages;
-    static int firstMessageIndex = 0;
-    static int lastMessageIndex = 0;
+    static int firstMessageIndex;
+    static int lastMessageIndex;
 
     public ScrollMessages(FolderNavigation folderNav) {
         this.folderNav = folderNav;
@@ -39,8 +39,8 @@ public abstract class ScrollMessages implements Callable<Integer> {
     public void showMessages() throws MessagingException {
         Message[] currentMessages = folderNav.getCurrentMessages();
 
-        for (int i = lastMessageIndex; i >= firstMessageIndex; i--) {
-            Message msg = currentMessages[i];
+        for (int i = firstMessageIndex; i <= lastMessageIndex; i++) {
+            Message msg = currentMessages[numberOfMessages - 1 - i];
 
             String newPrefix = "";
             if (!msg.isSet(Flags.Flag.SEEN)) {

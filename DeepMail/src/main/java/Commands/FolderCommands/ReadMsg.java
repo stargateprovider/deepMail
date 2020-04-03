@@ -27,7 +27,7 @@ public class ReadMsg implements Callable<Integer> {
     @Override
     public Integer call() throws IOException, MessagingException {
         Message[] currentMessages = folderNav.getCurrentMessages();
-        String msgContent = getText(currentMessages[msgNumber - 1]);
+        String msgContent = getText(currentMessages[currentMessages.length - msgNumber]);
 
         if (currentMessages[msgNumber - 1].isMimeType("multipart/*") && Desktop.isDesktopSupported()
                 && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {

@@ -17,7 +17,7 @@ public class NextMsgs extends ScrollMessages {
     @Override
     void scrollToRange() throws MessagingException {
         if (msgsCount > 0 && numberOfMessages > 0 && lastMessageIndex < numberOfMessages - 1){
-            firstMessageIndex = lastMessageIndex;
+            firstMessageIndex = lastMessageIndex + 1;
             lastMessageIndex = min(lastMessageIndex + msgsCount, numberOfMessages - 1);
             showMessages();
 

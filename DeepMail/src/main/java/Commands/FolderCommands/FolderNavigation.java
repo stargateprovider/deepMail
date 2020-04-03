@@ -3,6 +3,7 @@ package Commands.FolderCommands;
 import Commands.CommandExecutor;
 import Commands.Login;
 import com.sun.mail.imap.IMAPFolder;
+import picocli.CommandLine;
 import picocli.CommandLine.*;
 
 import javax.mail.Folder;
@@ -49,6 +50,8 @@ public class FolderNavigation implements Callable<Integer> {
         if (!currentFolder.isOpen())
             currentFolder.open(Folder.READ_WRITE);
 
+        ScrollMessages.firstMessageIndex = 1;
+        ScrollMessages.lastMessageIndex = -1;
         return new NextMsgs(this).call();
     }
 
