@@ -22,7 +22,7 @@ public class Main {
         CommandExecutor cmdExecutor = new CommandExecutor(commands);
         cmdExecutor.run();
     }
-    
+
     private static void readCommands(HashMap<String, Callable<Integer>> commands) {
         try(Scanner scanner = new Scanner(new File("commands.txt"))){
             while (scanner.hasNextLine()){
