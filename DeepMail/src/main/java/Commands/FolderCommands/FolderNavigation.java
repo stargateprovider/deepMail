@@ -23,8 +23,8 @@ public class FolderNavigation implements Callable<Integer> {
     public IMAPFolder currentFolder;
 
     HashMap<String, Message[]> messages;
-    int firstMessageIndex = 0;
-    int lastMessageIndex = 0;
+    static int firstMessageIndex = 0;
+    static int lastMessageIndex = 0;
 
     public FolderNavigation(Login session) throws MessagingException {
         this.session = session;
