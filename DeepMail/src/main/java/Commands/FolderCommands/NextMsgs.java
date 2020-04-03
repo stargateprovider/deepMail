@@ -1,33 +1,29 @@
 package Commands.FolderCommands;
 
 import picocli.CommandLine.*;
-
 import javax.mail.MessagingException;
-import java.util.concurrent.Callable;
+
+import static java.lang.Integer.min;
 
 /**
  * Loeb argumendina antud arv järgmisi emaile, kui argumenti ei anta, siis default on 10 emaili.
  */
 @Command(name = "next", mixinStandardHelpOptions = true, description = "Show next messages")
-public class NextMsgs implements Callable<Integer> {
-
-    @Parameters(description = "Number of messages to show", defaultValue = "10")
-    int msgsCount = 10;
-
-    FolderNavigation folderNav;
-
+public class NextMsgs extends ScrollMessages {
     public NextMsgs(FolderNavigation folderNav) {
-        this.folderNav = folderNav;
+        super(folderNav);
     }
 
     @Override
-    public Integer call() {
-        try {
-            folderNav.showMessages(msgsCount);
-        } catch (MessagingException e) {
-            System.out.println("Failed to read " + msgsCount + " at once");
-            return 1;
+    void scrollToRange() throws MessagingException {
+        if (msgsCount > 0 && numberOfMessages > 0 && lastMessageIndex < numberOfMessages - 1){
+            firstMessageIndex = lastMessageIndex;
+            lastMessageIndex = min(lastMessageIndex + msgsCount, numberOfMessages - 1);
+            showMessages();
+
+        } else if (lastMessageIndex == numberOfMessages - 1) {
+            System.out.println("Already at end of messages.");
         }
-        return 0;
     }
+
 }

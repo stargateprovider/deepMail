@@ -27,7 +27,7 @@ public class MoveMsg implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        Message msg = folderNav.messages.get(folderNav.currentFolder.getFullName())[msgNumber - 1];
+        Message msg = folderNav.getCurrentMessages()[msgNumber - 1];
 
         try {
             System.out.println("Subject: " + msg.getSubject());

@@ -1,33 +1,28 @@
 package Commands.FolderCommands;
 
 import picocli.CommandLine.*;
-
 import javax.mail.MessagingException;
-import java.util.concurrent.Callable;
+
+import static java.lang.Integer.max;
 
 /**
  * Loeb argumendina antud arv eelmisi emaile, kui argumenti ei anta, siis default on 10 emaili.
  */
 @Command(name = "previous", mixinStandardHelpOptions = true, description = "Show previous messages")
-public class PreviousMsgs implements Callable<Integer> {
-
-    @Parameters(description = "Number of messages to show", defaultValue = "10")
-    int msgsCount;
-
-    FolderNavigation folderNav;
-
+public class PreviousMsgs extends ScrollMessages {
     public PreviousMsgs(FolderNavigation folderNav) {
-        this.folderNav = folderNav;
+        super(folderNav);
     }
 
     @Override
-    public Integer call() {
-        try {
-            folderNav.showMessages(-1 * msgsCount);
-        } catch (MessagingException e) {
-            System.out.println("Failed to read " + msgsCount + " at once");
-            return 1;
+    void scrollToRange() throws MessagingException {
+        if (msgsCount > 0 && numberOfMessages > 0 && firstMessageIndex > 0){
+            lastMessageIndex = firstMessageIndex;
+            firstMessageIndex = max(firstMessageIndex - msgsCount, 0);
+            showMessages();
+
+        } else if (lastMessageIndex == numberOfMessages - 1) {
+            System.out.println("Already at beginning of messages.");
         }
-        return 0;
     }
 }
