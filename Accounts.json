@@ -1,1 +1,11 @@
-{}
+{
+  "account" : [ {
+    "username" : "test",
+    "hashedPassword" : "dGVzdDE=",
+    "emailsList" : [ ]
+  }, {
+    "username" : "test2",
+    "hashedPassword" : "dGVzdDE=",
+    "emailsList" : [ ]
+  } ]
+}

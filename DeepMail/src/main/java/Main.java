@@ -18,7 +18,7 @@ public class Main {
             put("login", new Login());
             put("sendmail", new SendMail());
             put("echo", new PrintEcho());
-            put("createAccount", new Account());
+            put("createaccount", new Account());
             //put("test", Main::test);
         }};
         //commands.put("addCommand", new CommandAdder());
