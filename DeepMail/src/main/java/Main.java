@@ -1,4 +1,3 @@
-import Commands.FolderCommands.ReadMsg;
 import picocli.CommandLine;
 import Commands.*;
 
@@ -19,6 +18,8 @@ public class Main {
             put("sendmail", new SendMail());
             put("echo", new PrintEcho());
             put("createaccount", new Account());
+            put("loginaccount", new LoginAccount());
+            put("addemail", new Email());
             //put("test", Main::test);
         }};
         //commands.put("addCommand", new CommandAdder());

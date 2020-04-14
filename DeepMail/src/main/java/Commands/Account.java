@@ -1,4 +1,5 @@
-import Commands.CommandExecutor;
+package Commands;
+
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -11,17 +12,75 @@ import picocli.CommandLine;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "createaccount", mixinStandardHelpOptions = true)
 public class Account implements Callable<Integer> {
 
+    private static List<Account> accounts;
+
     private String username;
     private byte[] hashedPassword;
 
     private List<Email> emailsList;
+
+    public static Account getAccount(String username, String password) {
+
+        if(accounts == null){
+            accounts = loadData();
+            if(accounts == null) return null;
+        }
+
+        for (Account account : accounts) {
+            if(account.username.equals(username) && Arrays.equals(account.hashedPassword, password.getBytes())){
+                return account;
+            }
+        }
+
+        return null;
+    }
+
+    private static List<Account> loadData() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Account> accounts;
+
+        JsonNode jsonNode;
+        try {
+            jsonNode = objectMapper.readTree(new File("Accounts.json"));
+            if(jsonNode.has("account")){
+                accounts = objectMapper.readValue(String.valueOf(jsonNode.get("account")), new TypeReference<List<Account>>(){});
+                return accounts;
+            }else{
+                return null;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+
+    private static void saveData() {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            ArrayNode accountsNode = objectMapper.valueToTree(accounts);
+            ObjectNode objectNode = objectMapper.createObjectNode();
+            objectNode.set("account", accountsNode);
+
+            objectMapper.writeTree(new JsonFactory().createGenerator(new File("Accounts.json"), JsonEncoding.UTF8).setPrettyPrinter(new DefaultPrettyPrinter()), objectNode);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public List<Email> getEmailsList() {
         return emailsList;
@@ -47,8 +106,9 @@ public class Account implements Callable<Integer> {
         return hashedPassword;
     }
 
-    public void addEmail(String domain, String password) {
-        this.emailsList.add(new Email(domain, password));
+    public void addEmail(Email email) {
+        this.emailsList.add(email);
+        saveData();
     }
 
     @Override

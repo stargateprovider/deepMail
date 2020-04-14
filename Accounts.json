@@ -2,7 +2,10 @@
   "account" : [ {
     "username" : "test",
     "hashedPassword" : "dGVzdDE=",
-    "emailsList" : [ ]
+    "emailsList" : [ {
+      "emailDomain" : "minatestin123@gmail.com",
+      "hashedPassword" : "QWphbGVodDE="
+    } ]
   }, {
     "username" : "test2",
     "hashedPassword" : "dGVzdDE=",
