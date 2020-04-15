@@ -1,7 +1,9 @@
 package Commands;
 
+import Commands.FolderCommands.*;
 import picocli.CommandLine;
 
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "loginaccount", mixinStandardHelpOptions = true)
@@ -14,6 +16,7 @@ public class LoginAccount implements Callable<Integer> {
     private static String password;
 
     private static boolean LoggedIn = false;
+    private static Account account;
 
 
     @Override
@@ -23,19 +26,22 @@ public class LoginAccount implements Callable<Integer> {
             return 2;
         }
 
-        Account account = Account.getAccount(username, password);
-        if(account == null){
+        Account accountLogin = Account.getAccount(username, password);
+        if(accountLogin == null){
             System.out.println("Credentials were wrong or account doensn't exist");
             return 2;
         }
 
-        System.out.println("Logged in as " + account.getUsername());
+        System.out.println("Logged in as " + accountLogin.getUsername());
 
+        account = accountLogin;
 
         LoggedIn = true;
         return 1;
 
     }
+
+    public static Account getAccount(){ return account;}
 
     public static String getUsername() {
         return username;

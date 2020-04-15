@@ -45,11 +45,29 @@ public class Login implements Callable<Integer> {
     @Override
     public Integer call() throws MessagingException {
         String imapServer, smtpServer;
+        char[] password = new char[0];
+
+        if(LoginAccount.isLoggedIn()){
+            Account account = LoginAccount.getAccount();
+            System.out.println("Choose your email");
+
+            int emailIndex = 1;
+            for (Email email : account.getEmailsList()) {
+                System.out.println(emailIndex + ". " + email.getEmailDomain());
+            }
+            int index = Integer.parseInt(CommandExecutor.quickInput("Insert the number: "));
+            username = account.getEmailsList().get(index-1).getEmailDomain();
+            password = new String(account.getEmailsList().get(index-1).getHashedPassword()).toCharArray();
+
+        }
 
         if (CommandExecutor.credentials == null) {
             imapServer = identifyMailServer(username, true);
             smtpServer = identifyMailServer(username, false);
-            CommandExecutor.credentials = new Credentials(username, imapServer, smtpServer, CommandExecutor.readPassword());
+
+            if(LoginAccount.isLoggedIn()) CommandExecutor.credentials = new Credentials(username, imapServer, smtpServer, password);
+            else CommandExecutor.credentials = new Credentials(username, imapServer, smtpServer, CommandExecutor.readPassword());
+
         } else {
             System.out.println("You have already saved your credentials (use 'logout' first to login as another user)!");
             return 0;
