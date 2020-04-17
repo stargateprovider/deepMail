@@ -1,22 +1,48 @@
 package Commands;
 
+import Commands.FolderCommands.FolderNavigation;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import java.util.*;
 import java.util.concurrent.Callable;
 
 /**
  * Käsk kirja saatmiseks.
- * Süntaks: sendmail <server> <saatja email> <saatja parool> <saaja> <pealkiri> <kirja sisu>
- * Kasutamisnäide: sendmail smtp.gmail.com asdf@gmail.com hunter2 qwer@gmail.com pealkiri "kirja sisu"
+ * Süntaks: reply <vastava kirja jrk.> -b <kirja sisu> -f <tee manuseni> / write <kirja saaja> -t <kirja pealkiri> -b -f
+ * Kasutamisnäide: write user@example.com -t pealkiri -b sisu -f C:\\Users\\user\\Desktop\\file.txt
  */
 @Command(name = "sendmail", mixinStandardHelpOptions = true)
 public class SendMail implements Callable<Integer> {
-    @Parameters(arity="3")
-    String[] args;
+
+    @Option(names = {"-f", "--file"}, description = "Path to the attachment.")
+    private String file = "";
+
+    @Option(names = {"-b", "--body"}, description = "Body of the message.")
+    private String body = "";
+
+    @Option(names = {"-t", "--title"}, description = "Title of the message.")
+    private String title = "";
+
+    @Parameters(arity="1")
+    String arg;
+
+    FolderNavigation folderNav;
+
+    public SendMail(FolderNavigation folderNav) {
+        this.folderNav = folderNav;
+    }
+
+    public SendMail() {
+
+    }
 
     public static void main(String[] args) {
         new CommandLine(new SendMail()).execute(args);
@@ -28,6 +54,18 @@ public class SendMail implements Callable<Integer> {
             System.out.println("Use the \"login\" command first!");
             return 0;
         }
+        Address[] to;
+
+        if (folderNav != null) {
+            Message[] currentMessages = folderNav.getCurrentMessages();
+            to = currentMessages[currentMessages.length - Integer.parseInt(arg)].getReplyTo();
+            if (title.equals("")) {
+                title = "RE: " + currentMessages[currentMessages.length - Integer.parseInt(arg)].getSubject();
+            }
+        } else {
+            to = new Address[1];
+            to[0] = new InternetAddress(arg);
+        }
         Properties props = System.getProperties();
         props.setProperty("mail.smtp.host", CommandExecutor.credentials.getSmptServer());
         props.put("mail.smtp.starttls.enable", "true");
@@ -37,11 +75,24 @@ public class SendMail implements Callable<Integer> {
         Session session = Session.getInstance(props, null);
         MimeMessage msg = new MimeMessage(session);
         msg.setFrom(CommandExecutor.credentials.getUsername());
-        msg.setRecipients(Message.RecipientType.TO, args[0]);
-        msg.setSubject(args[1]);
-        msg.setSentDate(new Date());
-        msg.setText(args[2]);
+        msg.setRecipients(Message.RecipientType.TO, to);
+        msg.setSubject(title);
+        if (file.equals("")) {
+            msg.setText(body);
+        } else {
+            Multipart multipart = new MimeMultipart();
+            BodyPart bodyPart = new MimeBodyPart();
+            bodyPart.setText(body);
+            multipart.addBodyPart(bodyPart);
+            bodyPart = new MimeBodyPart();
+            bodyPart.setDataHandler(new DataHandler(new FileDataSource(file)));
+            bodyPart.setFileName(file.substring(file.lastIndexOf("\\")+1));
+            multipart.addBodyPart(bodyPart);
+            msg.setContent(multipart);
+        }
         Transport.send(msg,CommandExecutor.credentials.getUsername(),String.valueOf(CommandExecutor.credentials.getPassword()));
+        file = "";
+        body = "";
         return 0;
     }
 }

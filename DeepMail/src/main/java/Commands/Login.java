@@ -97,8 +97,8 @@ public class Login implements Callable<Integer> {
                 put("previous", new PreviousMsgs(folderNav));
                 put("delete", new DeleteMsg(folderNav));
                 put("move", new MoveMsg(folderNav));
-                //put("reply", new ReplyMsg());
-                //put("write", new WriteMsg());
+                put("reply", new SendMail(folderNav));
+                put("write", new SendMail());
                 put("logout", new Logout());
             }};
 
