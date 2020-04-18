@@ -41,18 +41,21 @@ public abstract class ScrollMessages implements Callable<Integer> {
 
         for (int i = firstMessageIndex; i <= lastMessageIndex; i++) {
             Message msg = currentMessages[numberOfMessages - 1 - i];
-
-            String newPrefix = "";
-            if (!msg.isSet(Flags.Flag.SEEN)) {
-                newPrefix = "[UNREAD] ";
-                msg.setFlag(Flags.Flag.SEEN, true);
-            }
-
-            System.out.println(i+1 + ". " + msg.getSubject()
-                    + "\n\tFrom: " + Arrays.toString(msg.getFrom())
-                    + "\n\t" + newPrefix + "Date: " + msg.getSentDate());
+            showMessageInfo(msg, i+1);
         }
         System.out.printf("Showing messages %d-%d of %d.\n",
                 firstMessageIndex+1, lastMessageIndex+1, currentMessages.length);
+    }
+
+    public static void showMessageInfo(Message msg, int nr) throws MessagingException {
+        String newPrefix = "";
+        if (!msg.isSet(Flags.Flag.SEEN)) {
+            newPrefix = "[UNREAD] ";
+            msg.setFlag(Flags.Flag.SEEN, true);
+        }
+
+        System.out.println(nr + ". " + msg.getSubject()
+                + "\n\tFrom: " + Arrays.toString(msg.getFrom())
+                + "\n\t" + newPrefix + "Date: " + msg.getSentDate());
     }
 }
