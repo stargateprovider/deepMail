@@ -1,25 +1,15 @@
 package Commands;
 
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import picocli.CommandLine;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Array;
+import java.io.*;
+import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "createaccount", mixinStandardHelpOptions = true)
-public class Account implements Callable<Integer> {
+public class Account implements Callable<Integer>, Serializable {
 
     private static List<Account> accounts;
 
@@ -30,56 +20,76 @@ public class Account implements Callable<Integer> {
 
     public static Account getAccount(String username, String password) {
 
-        if(accounts == null){
-            accounts = loadData();
-            if(accounts == null) return null;
-        }
+        try(Socket socket = new Socket("127.0.0.1", 1337);
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream())){
 
-        for (Account account : accounts) {
-            if(account.username.equals(username) && Arrays.equals(account.hashedPassword, password.getBytes())){
-                return account;
-            }
-        }
+            out.writeInt(1);
+            out.writeUTF(username);
+            out.writeUTF(password);
+            out.flush();
 
-        return null;
-    }
+            return (Account) in.readObject();
 
-    private static List<Account> loadData() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<Account> accounts;
-
-        JsonNode jsonNode;
-        try {
-            jsonNode = objectMapper.readTree(new File("Accounts.json"));
-            if(jsonNode.has("account")){
-                accounts = objectMapper.readValue(String.valueOf(jsonNode.get("account")), new TypeReference<List<Account>>(){});
-                return accounts;
-            }else{
-                return null;
-            }
-
-        } catch (IOException e) {
+        }catch (IOException | ClassNotFoundException e){
             e.printStackTrace();
+            return null;
         }
-
-        return null;
 
     }
 
+    private void saveData() {
 
-    private static void saveData() {
-        ObjectMapper objectMapper = new ObjectMapper();
+        try(Socket socket = new Socket("127.0.0.1", 1337);
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream())){
 
-        try {
-            ArrayNode accountsNode = objectMapper.valueToTree(accounts);
-            ObjectNode objectNode = objectMapper.createObjectNode();
-            objectNode.set("account", accountsNode);
+            out.writeInt(2);
+            out.writeObject(this);
+            out.flush();
 
-            objectMapper.writeTree(new JsonFactory().createGenerator(new File("Accounts.json"), JsonEncoding.UTF8).setPrettyPrinter(new DefaultPrettyPrinter()), objectNode);
-
-        } catch (IOException e) {
+        }catch (IOException e){
             e.printStackTrace();
         }
+
+    }
+
+    @Override
+    public Integer call(){
+       return createAccount();
+    }
+
+    private int createAccount() {
+        String username = CommandExecutor.quickInput("> Write your username: ");
+        while(true) {
+            String password = CommandExecutor.quickInput("> Write your password: ");
+            String passwordAgain = CommandExecutor.quickInput("> Write your password once again: ");
+            if (password.equals(passwordAgain)) {
+                this.username = username;
+                this.hashedPassword = password.getBytes();
+                this.emailsList = new ArrayList<>();
+                saveObject(this);
+                return 0;
+            } else {
+                System.out.println("Passwords didn't match!");
+            }
+        }
+    }
+
+    private void saveObject(Account account) {
+
+        try(Socket socket = new Socket("127.0.0.1", 1337);
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream())){
+
+            out.writeInt(3);
+            out.writeObject(account);
+            out.flush();
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
     }
 
     public List<Email> getEmailsList() {
@@ -109,54 +119,5 @@ public class Account implements Callable<Integer> {
     public void addEmail(Email email) {
         this.emailsList.add(email);
         saveData();
-    }
-
-    @Override
-    public Integer call(){
-       return createAccount();
-    }
-
-    private int createAccount() {
-        String username = CommandExecutor.quickInput("> Write your username: ");
-        while(true) {
-            String password = CommandExecutor.quickInput("> Write your password: ");
-            String passwordAgain = CommandExecutor.quickInput("> Write your password once again: ");
-            if (password.equals(passwordAgain)) {
-                this.username = username;
-                this.hashedPassword = password.getBytes();
-                this.emailsList = new ArrayList<>();
-                saveObject(this);
-                return 0;
-            } else {
-                System.out.println("Passwords didn't match!");
-            }
-        }
-    }
-
-    private void saveObject(Account account) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<Account> accounts;
-
-        try {
-            JsonNode jsonNode = objectMapper.readTree(new File("Accounts.json"));
-            if(jsonNode.has("account")){
-                accounts = objectMapper.readValue(String.valueOf(jsonNode.get("account")), new TypeReference<List<Account>>(){});
-            }else{
-                accounts = new ArrayList<>();
-            }
-
-            accounts.add(account);
-
-            ArrayNode accountsNode = objectMapper.valueToTree(accounts);
-            ObjectNode objectNode = objectMapper.createObjectNode();
-            objectNode.set("account", accountsNode);
-
-            objectMapper.writeTree(new JsonFactory().createGenerator(new File("Accounts.json"), JsonEncoding.UTF8).setPrettyPrinter(new DefaultPrettyPrinter()), objectNode);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
     }
 }

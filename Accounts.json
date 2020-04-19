@@ -14,5 +14,16 @@
     "username" : "kala",
     "hashedPassword" : "a2FsYTE=",
     "emailsList" : [ ]
+  }, {
+    "username" : "test3",
+    "hashedPassword" : "dGVzdDM=",
+    "emailsList" : [ {
+      "emailDomain" : "minatestin123@gmail.com",
+      "hashedPassword" : "QWphbGVodDE="
+    } ]
+  }, {
+    "username" : "test4",
+    "hashedPassword" : "dGVzdDQ=",
+    "emailsList" : [ ]
   } ]
 }

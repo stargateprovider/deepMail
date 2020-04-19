@@ -2,10 +2,11 @@ package Commands;
 
 import picocli.CommandLine;
 
+import java.io.Serializable;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "addemail", mixinStandardHelpOptions = true)
-public class Email implements Callable<Integer> {
+public class Email implements Callable<Integer>, Serializable {
 
         private String emailDomain;
         private byte[] hashedPassword;
