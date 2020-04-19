@@ -118,19 +118,18 @@ public class Account implements Callable<Integer> {
 
     private int createAccount() {
         String username = CommandExecutor.quickInput("> Write your username: ");
-        String password = CommandExecutor.quickInput("> Write your password: ");
-        String passwordAgain = CommandExecutor.quickInput("> Write your password once again: ");
-
-        if(password.equals(passwordAgain)){
-            this.username = username;
-            this.hashedPassword = password.getBytes();
-            this.emailsList = new ArrayList<>();
-            saveObject(this);
-            return 0;
-        }else{
-            // TODO: 05.04.20 Teha tsüklisse korduvalt küsima
-            System.out.println("Passwords didn't match!");
-            return 1;
+        while(true) {
+            String password = CommandExecutor.quickInput("> Write your password: ");
+            String passwordAgain = CommandExecutor.quickInput("> Write your password once again: ");
+            if (password.equals(passwordAgain)) {
+                this.username = username;
+                this.hashedPassword = password.getBytes();
+                this.emailsList = new ArrayList<>();
+                saveObject(this);
+                return 0;
+            } else {
+                System.out.println("Passwords didn't match!");
+            }
         }
     }
 

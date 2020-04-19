@@ -10,5 +10,9 @@
     "username" : "test2",
     "hashedPassword" : "dGVzdDE=",
     "emailsList" : [ ]
+  }, {
+    "username" : "kala",
+    "hashedPassword" : "a2FsYTE=",
+    "emailsList" : [ ]
   } ]
 }
