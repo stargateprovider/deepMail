@@ -99,8 +99,10 @@ public class SendMail implements Callable<Integer> {
         } else {
             Multipart multipart = new MimeMultipart();
             BodyPart bodyPart = new MimeBodyPart();
-            bodyPart.setText(body);
-            multipart.addBodyPart(bodyPart);
+            if (encrypt.equals("")) {
+                bodyPart.setText(body);
+                multipart.addBodyPart(bodyPart);
+            }
             for (String i : file) {
                 bodyPart = new MimeBodyPart();
                 bodyPart.setDataHandler(new DataHandler(new FileDataSource(i)));
