@@ -3,12 +3,9 @@ package Commands.FolderCommands;
 import picocli.CommandLine.*;
 
 import javax.mail.*;
-import javax.mail.internet.MimeUtility;
 import java.awt.*;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Base64;
 import java.util.concurrent.Callable;
 
 /**
@@ -28,6 +25,7 @@ public class ReadMsg implements Callable<Integer> {
     @Override
     public Integer call() throws IOException, MessagingException {
         Message[] currentMessages = folderNav.getCurrentMessages();
+
         String msgContent = getText(currentMessages[currentMessages.length - msgNumber]);
 
         if (currentMessages[msgNumber - 1].isMimeType("multipart/*") && Desktop.isDesktopSupported()
@@ -67,7 +65,6 @@ public class ReadMsg implements Callable<Integer> {
             textIsHtml = p.isMimeType("text/html");*/
             return (String) p.getContent();
         }
-
         if (p.isMimeType("multipart/alternative")) {
             // prefer html text over plain text
             Multipart mp = (Multipart) p.getContent();

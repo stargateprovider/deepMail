@@ -4,13 +4,19 @@ import Commands.FolderCommands.*;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 
+import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 /**
  * Käsk kasutaja admete salvestamiseks kirjade lugemise/saatmise hõlbustamiseks.
@@ -18,7 +24,7 @@ import java.util.concurrent.Callable;
  */
 @Command(name = "login", mixinStandardHelpOptions = true)
 public class Login implements Callable<Integer> {
-    @Parameters(arity = "1")
+    @Option(names = {"-u", "--user"}, arity = "1", defaultValue = "")
     String username;
 
     public Store store;
@@ -27,16 +33,18 @@ public class Login implements Callable<Integer> {
     static final String[] outlookServers = new String[]{"imap-mail.outlook.com", "smtp-mail.outlook.com"};
 
     // Populaarsed meilipakkujate serverid kujul <meiliaadressi sufiks>: {IMAP aadress, SMTP aadress}
-    public static final HashMap<String, String[]> mailServers = new HashMap<>() {{
-        put("gmail", new String[]{"imap.gmail.com", "smtp.gmail.com"});
-        put("yahoo", new String[]{"imap.mail.yahoo.com", "smtp.mail.yahoo.com"});
-        put("hotmail", outlookServers);
-        put("live", outlookServers);
-        put("windowslive", outlookServers);
-        put("msn", outlookServers);
-        put("online", new String[]{"mail.suhtlus.ee", "mail.hot.ee"});
-        put("hot", new String[]{"mail.suhtlus.ee", "mail.hot.ee"});
-    }};
+    public static final HashMap<String, String[]> mailServers = new HashMap<>();
+
+    static {
+        mailServers.put("gmail", new String[]{"imap.gmail.com", "smtp.gmail.com"});
+        mailServers.put("yahoo", new String[]{"imap.mail.yahoo.com", "smtp.mail.yahoo.com"});
+        mailServers.put("hotmail", outlookServers);
+        mailServers.put("live", outlookServers);
+        mailServers.put("windowslive", outlookServers);
+        mailServers.put("msn", outlookServers);
+        mailServers.put("online", new String[]{"mail.suhtlus.ee", "mail.hot.ee"});
+        mailServers.put("hot", new String[]{"mail.suhtlus.ee", "mail.hot.ee"});
+    }
 
     public static void main(String[] args) {
         new CommandLine(new Login()).execute(args);
@@ -47,31 +55,28 @@ public class Login implements Callable<Integer> {
         String imapServer, smtpServer;
         char[] password = new char[0];
 
-        if(LoginAccount.isLoggedIn()){
+        if (LoginAccount.isLoggedIn()) {
             Account account = LoginAccount.getAccount();
-            System.out.println("Choose your email");
+            List<String> emailAddresses = account.getEmailsList().stream()
+                    .map(e -> e.getEmailDomain()).collect(Collectors.toList());
 
-            int emailIndex = 1;
-            for (Email email : account.getEmailsList()) {
-                System.out.println(emailIndex + ". " + email.getEmailDomain());
+            if (!emailAddresses.isEmpty()) {
+                System.out.println("Choose your email:");
+                int index = CommandExecutor.quickChoice(emailAddresses, "\n");
+                username = emailAddresses.get(index);
+                password = new String(account.getEmailsList().get(index).getHashedPassword()).toCharArray();
             }
-            int index = Integer.parseInt(CommandExecutor.quickInput("Insert the number: "));
-            username = account.getEmailsList().get(index-1).getEmailDomain();
-            password = new String(account.getEmailsList().get(index-1).getHashedPassword()).toCharArray();
-
+        }
+        if (username.isEmpty()) {
+            username = CommandExecutor.quickInput("Enter email address: ");
+        }
+        if (password.length == 0) {
+            password = CommandExecutor.readPassword();
         }
 
-        if (CommandExecutor.credentials == null) {
-            imapServer = identifyMailServer(username, true);
-            smtpServer = identifyMailServer(username, false);
-
-            if(LoginAccount.isLoggedIn()) CommandExecutor.credentials = new Credentials(username, imapServer, smtpServer, password);
-            else CommandExecutor.credentials = new Credentials(username, imapServer, smtpServer, CommandExecutor.readPassword());
-
-        } else {
-            System.out.println("You have already saved your credentials (use 'logout' first to login as another user)!");
-            return 0;
-        }
+        imapServer = identifyMailServer(username, true);
+        smtpServer = identifyMailServer(username, false);
+        CommandExecutor.credentials = new Credentials(username, imapServer, smtpServer, password);
 
         Properties props = System.getProperties();
         props.setProperty("mail.store.protocol", "imaps");
@@ -89,28 +94,33 @@ public class Login implements Callable<Integer> {
             folderNav.call();
 
             // Meilidevaade
-            HashMap<String, Callable<Integer>> commands = new HashMap<>() {{
-                put("selectfolder", folderNav);
-                put("folder", new GetCurrentFolder(folderNav));
-                put("read", new ReadMsg(folderNav));
-                put("next", new NextMsgs(folderNav));
-                put("previous", new PreviousMsgs(folderNav));
-                put("search", new SearchMsgs(folderNav));
-                put("delete", new DeleteMsg(folderNav));
-                put("move", new MoveMsg(folderNav));
-                put("reply", new SendMail(folderNav));
-                put("write", new SendMail());
-                put("logout", new Logout());
-            }};
+            HashMap<String, Callable<Integer>> commands = new HashMap<>();
+            commands.put("selectfolder", folderNav);
+            commands.put("folder", new GetCurrentFolder(folderNav));
+            commands.put("read", new ReadMsg(folderNav));
+            commands.put("attachments", new Attachments(folderNav));
+            commands.put("next", new NextMsgs(folderNav));
+            commands.put("previous", new PreviousMsgs(folderNav));
+            commands.put("search", new SearchMsgs(folderNav));
+            commands.put("delete", new DeleteMsg(folderNav));
+            commands.put("move", new MoveMsg(folderNav));
+            commands.put("reply", new SendMail(folderNav));
+            commands.put("write", new SendMail());
+            commands.put("logout", new Back());
 
             CommandExecutor cmdExecutor = new CommandExecutor(commands);
             cmdExecutor.run();
-        } /* LISA TINGIMUS: KUI ON UUS GMAIL KASUTAJA>> catch (AuthenticationFailedException e){
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
-                Desktop.getDesktop().browse(URI.create("https://myaccount.google.com/lesssecureapps"));
-        }*/ finally {
-            close();
             System.out.println("Logged out");
+
+        } catch (AuthenticationFailedException e) {
+            System.out.println("Authentication failed.");
+            if (imapServer == mailServers.get("gmail")[0]) {
+                System.out.println("If you're logging in with this address for the first time, " +
+                        "you need to enable access at https://myaccount.google.com/lesssecureapps");
+            }
+        } finally {
+            close();
+            CommandExecutor.credentials = null;
         }
         return 0;
     }
@@ -145,10 +155,21 @@ public class Login implements Callable<Integer> {
 
 // Tõstsin siia ideega, et Commands kaustas ainult commandid
 class Credentials {
-    public String getUsername() { return username; }
-    public String getImapServer() { return imapServer; }
-    public String getSmptServer() { return smptServer; }
-    public char[] getPassword() { return password; }
+    public String getUsername() {
+        return username;
+    }
+
+    public String getImapServer() {
+        return imapServer;
+    }
+
+    public String getSmptServer() {
+        return smptServer;
+    }
+
+    public char[] getPassword() {
+        return password;
+    }
 
     private String username;
     private String imapServer;
