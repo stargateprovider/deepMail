@@ -1,6 +1,8 @@
 package Commands;
 
 import Commands.FolderCommands.FolderNavigation;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openpgp.PGPException;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 
@@ -11,12 +13,15 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import java.io.IOException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
 import java.util.*;
 import java.util.concurrent.Callable;
 
 /**
  * Käsk kirja saatmiseks.
- * Süntaks: reply <vastava kirja jrk.> -b <kirja sisu> -f <tee manuseni> / write <kirja saaja> -t <kirja pealkiri> -b -f
+ * Süntaks: reply <vastava kirja jrk.> -b <kirja sisu> -e <tee PGP public võtmeni (RSA)> -f <tee manuseni> / write <kirja saaja> -t <kirja pealkiri> -b -f
  * Kasutamisnäide: write user@example.com -t pealkiri -b sisu -f C:\\Users\\user\\Desktop\\file.txt
  */
 @Command(name = "sendmail", mixinStandardHelpOptions = true)
@@ -30,6 +35,9 @@ public class SendMail implements Callable<Integer> {
 
     @Option(names = {"-t", "--title"}, description = "Title of the message.")
     private String title = "";
+
+    @Option(names = {"-e", "--encrypt"}, description = "Path to RSA public key.")
+    private String encrypt = "";
 
     @Parameters(arity="1")
     String arg;
@@ -49,7 +57,7 @@ public class SendMail implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws MessagingException {
+    public Integer call() throws MessagingException, NoSuchProviderException, IOException, PGPException {
         if (CommandExecutor.credentials == null) {
             System.out.println("Use the \"login\" command first!");
             return 0;
@@ -77,6 +85,11 @@ public class SendMail implements Callable<Integer> {
         msg.setFrom(CommandExecutor.credentials.getUsername());
         msg.setRecipients(Message.RecipientType.TO, to);
         msg.setSubject(title);
+        if (!encrypt.equals("")) {
+            Security.addProvider(new BouncyCastleProvider());
+            PGPUtilities.encryptFile("encrypted.asc", file, encrypt, true, true);
+            file = "encrypted.asc";
+        }
         if (file.equals("")) {
             msg.setText(body);
         } else {
