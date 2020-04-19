@@ -1,6 +1,7 @@
 package Commands;
 
 import Commands.FolderCommands.FolderNavigation;
+import Utilities.PGPUtilities;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPException;
 import picocli.CommandLine;

@@ -1,4 +1,4 @@
-package Commands;
+package Utilities;
 // Code from:
 // https://github.com/bcgit/bc-java/blob/master/pg/src/main/java/org/bouncycastle/openpgp/examples/PGPExampleUtil.java
 // https://github.com/bcgit/bc-java/blob/master/pg/src/main/java/org/bouncycastle/openpgp/examples/KeyBasedFileProcessor.java
@@ -6,12 +6,10 @@ package Commands;
 import java.io.*;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.util.Iterator;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.CompressionAlgorithmTags;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory;
 import org.bouncycastle.openpgp.operator.jcajce.*;
@@ -34,7 +32,7 @@ import org.bouncycastle.util.io.Streams;
  * Note 2: if an empty file name has been specified in the literal data object contained in the
  * encrypted packet a file with the name filename.out will be generated in the current working directory.
  */
-class PGPUtilities
+public class PGPUtilities
 {
     public static void decryptFile(
             String inputFileName,
