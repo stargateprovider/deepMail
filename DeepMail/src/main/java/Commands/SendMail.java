@@ -13,7 +13,10 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.util.*;
@@ -27,8 +30,8 @@ import java.util.concurrent.Callable;
 @Command(name = "sendmail", mixinStandardHelpOptions = true)
 public class SendMail implements Callable<Integer> {
 
-    @Option(names = {"-f", "--file"}, description = "Path to the attachment.")
-    private String file = "";
+    @Option(names = {"-f", "--file"}, arity = "0..*", description = "Path to the attachment(s).")
+    List<String> file = new ArrayList<>();
 
     @Option(names = {"-b", "--body"}, description = "Body of the message.")
     private String body = "";
@@ -86,25 +89,28 @@ public class SendMail implements Callable<Integer> {
         msg.setRecipients(Message.RecipientType.TO, to);
         msg.setSubject(title);
         if (!encrypt.equals("")) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("body.input"));) { writer.write(body); }
             Security.addProvider(new BouncyCastleProvider());
-            PGPUtilities.encryptFile("encrypted.asc", file, encrypt, true, true);
-            file = "encrypted.asc";
+            PGPUtilities.encryptFile("encrypted.asc", "body.input", encrypt, true, true);
+            file.add("encrypted.asc");
         }
-        if (file.equals("")) {
+        if (file.isEmpty()) {
             msg.setText(body);
         } else {
             Multipart multipart = new MimeMultipart();
             BodyPart bodyPart = new MimeBodyPart();
             bodyPart.setText(body);
             multipart.addBodyPart(bodyPart);
-            bodyPart = new MimeBodyPart();
-            bodyPart.setDataHandler(new DataHandler(new FileDataSource(file)));
-            bodyPart.setFileName(file.substring(file.lastIndexOf("\\")+1));
-            multipart.addBodyPart(bodyPart);
+            for (String i : file) {
+                bodyPart = new MimeBodyPart();
+                bodyPart.setDataHandler(new DataHandler(new FileDataSource(i)));
+                bodyPart.setFileName(Paths.get(i).getFileName().toString());
+                multipart.addBodyPart(bodyPart);
+            }
             msg.setContent(multipart);
         }
         Transport.send(msg,CommandExecutor.credentials.getUsername(),String.valueOf(CommandExecutor.credentials.getPassword()));
-        file = "";
+        file = new ArrayList<>();
         body = "";
         return 0;
     }
