@@ -105,6 +105,7 @@ public class Login implements Callable<Integer> {
             commands.put("delete", new DeleteMsg(folderNav));
             commands.put("move", new MoveMsg(folderNav));
             commands.put("reply", new SendMail(folderNav));
+            commands.put("savemail", new SaveMail(folderNav));
             commands.put("write", new SendMail());
             commands.put("logout", new Back());
 
