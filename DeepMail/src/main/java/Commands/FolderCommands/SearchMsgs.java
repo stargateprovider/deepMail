@@ -29,7 +29,7 @@ public class SearchMsgs implements Callable<Integer> {
 
     @Override
     public Integer call() throws MessagingException, IOException {
-        Pattern compiledRegex = Pattern.compile(regex);
+        Pattern compiledRegex = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         Message[] messages = folderNav.getCurrentMessages();
 
         int numberOfResults = 0;

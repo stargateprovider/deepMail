@@ -4,6 +4,7 @@ package Commands;
 import picocli.CommandLine;
 
 import java.io.Console;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
@@ -54,7 +55,7 @@ public class CommandExecutor {
                 options = Pattern.compile("\"([^\"]*)\"|(\\S+)")
                         .matcher(argsString)
                         .results()
-                        .map(MatchResult::group)
+                        .map(m -> m.group(1) != null ? m.group(1) : m.group(2))
                         .toArray(String[]::new);
             }
             return new CommandLine(commands.get(cmdName)).execute(options);
