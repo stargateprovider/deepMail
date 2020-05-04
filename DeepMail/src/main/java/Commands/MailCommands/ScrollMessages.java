@@ -1,5 +1,6 @@
-package Commands.FolderCommands;
+package Commands.MailCommands;
 
+import Commands.DMExitCode;
 import picocli.CommandLine.*;
 
 import javax.mail.Flags;
@@ -29,9 +30,9 @@ public abstract class ScrollMessages implements Callable<Integer> {
             scrollToRange();
         } catch (MessagingException e) {
             System.out.println("Failed to read " + msgsCount + " at once");
-            return 1;
+            return DMExitCode.SOFTWARE;
         }
-        return 0;
+        return DMExitCode.OK;
     }
 
     abstract void scrollToRange() throws MessagingException;
@@ -51,7 +52,6 @@ public abstract class ScrollMessages implements Callable<Integer> {
         String newPrefix = "";
         if (!msg.isSet(Flags.Flag.SEEN)) {
             newPrefix = "[UNREAD] ";
-            msg.setFlag(Flags.Flag.SEEN, true);
         }
 
         System.out.println(nr + ". " + msg.getSubject()

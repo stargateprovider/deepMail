@@ -1,4 +1,5 @@
-import Commands.FolderCommands.SaveMail;
+import Commands.MailCommands.EmailLogin;
+import Commands.MailCommands.SendMail;
 import picocli.CommandLine;
 import Commands.*;
 
@@ -15,7 +16,7 @@ public class Main {
         //test();
 
         HashMap<String, Callable<Integer>> commands = new HashMap<>(){{
-            put("login", new Login());
+            put("login", new EmailLogin());
             put("sendmail", new SendMail());
             put("echo", new PrintEcho());
             put("createaccount", new Account());
@@ -75,6 +76,6 @@ public class Main {
         System.out.println("Test 3");
         new CommandLine(new PrintEcho()).execute(test3);
 
-        return 0;
+        return DMExitCode.OK;
     }
 }

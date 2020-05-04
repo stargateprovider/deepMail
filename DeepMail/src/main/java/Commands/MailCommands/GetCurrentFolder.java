@@ -1,10 +1,11 @@
-package Commands.FolderCommands;
+package Commands.MailCommands;
 
+import Commands.DMExitCode;
 import picocli.CommandLine.Command;
 
 import java.util.concurrent.Callable;
 
-@Command(name = "folder", mixinStandardHelpOptions = true)
+@Command(name = "folder", description = {"Display current folder's name"})
 public class GetCurrentFolder implements Callable<Integer> {
     FolderNavigation folderNav;
 
@@ -15,6 +16,6 @@ public class GetCurrentFolder implements Callable<Integer> {
     @Override
     public Integer call() {
         System.out.println(folderNav.currentFolder);
-        return 0;
+        return DMExitCode.OK;
     }
 }

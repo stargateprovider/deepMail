@@ -1,18 +1,16 @@
 package Commands;
 
-import Commands.FolderCommands.*;
-import picocli.CommandLine;
+import picocli.CommandLine.*;
 
-import java.util.HashMap;
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "loginaccount", mixinStandardHelpOptions = true)
+@Command(name = "loginaccount", description = {"Login to your DeepMail account"})
 public class LoginAccount implements Callable<Integer> {
 
-    @CommandLine.Parameters(index = "0")
+    @Parameters(index = "0")
     private static String username;
 
-    @CommandLine.Parameters(index = "1")
+    @Parameters(index = "1")
     private static String password;
 
     private static boolean LoggedIn = false;
@@ -23,13 +21,13 @@ public class LoginAccount implements Callable<Integer> {
     public Integer call() {
         if(isLoggedIn()){
             System.out.println("You are already logged in. Please logout first!");
-            return 2;
+            return DMExitCode.USAGE;
         }
 
         Account accountLogin = Account.getAccount(username, password);
         if(accountLogin == null){
             System.out.println("Credentials were wrong or account doensn't exist");
-            return 2;
+            return DMExitCode.USAGE;
         }
 
         System.out.println("Logged in as " + accountLogin.getUsername());
@@ -37,7 +35,7 @@ public class LoginAccount implements Callable<Integer> {
         account = accountLogin;
 
         LoggedIn = true;
-        return 1;
+        return DMExitCode.SOFTWARE;
 
     }
 

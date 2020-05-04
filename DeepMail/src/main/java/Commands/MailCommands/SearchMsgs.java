@@ -1,5 +1,6 @@
-package Commands.FolderCommands;
+package Commands.MailCommands;
 
+import Commands.DMExitCode;
 import picocli.CommandLine.*;
 
 import javax.mail.Message;
@@ -14,7 +15,7 @@ import java.util.regex.Pattern;
 /**
  * Kuvab emailid, mis vastavad regulaaravaldisele.
  */
-@Command(name = "search", mixinStandardHelpOptions = true, description = "Search for matching messages")
+@Command(name = "search", description = "Search for matching messages")
 public class SearchMsgs implements Callable<Integer> {
     @Parameters(description = "Regular expression")
     String regex;
@@ -48,6 +49,6 @@ public class SearchMsgs implements Callable<Integer> {
             }
         }
         System.out.println("Found " + numberOfResults + " results.");
-        return 0;
+        return DMExitCode.OK;
     }
 }

@@ -1,6 +1,6 @@
 package Commands;
 
-import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
 import java.io.*;
 import java.net.Socket;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "createaccount", mixinStandardHelpOptions = true)
+@Command(name = "createaccount", description = {"Create a new DeepMail account"})
 public class Account implements Callable<Integer>, Serializable {
 
     private static List<Account> accounts;
@@ -69,7 +69,7 @@ public class Account implements Callable<Integer>, Serializable {
                 this.hashedPassword = password.getBytes();
                 this.emailsList = new ArrayList<>();
                 saveObject(this);
-                return 0;
+                return DMExitCode.OK;
             } else {
                 System.out.println("Passwords didn't match!");
             }

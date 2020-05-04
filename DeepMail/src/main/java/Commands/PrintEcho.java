@@ -25,7 +25,7 @@ public class PrintEcho implements Callable<Integer> {
     @Override
     public Integer call(){
         System.out.println(this.msg);
-        return 0;
+        return DMExitCode.OK;
     }
 
     @Override

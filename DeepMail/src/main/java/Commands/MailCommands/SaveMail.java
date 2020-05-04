@@ -1,6 +1,7 @@
-package Commands.FolderCommands;
+package Commands.MailCommands;
 
 
+import Commands.DMExitCode;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -10,8 +11,6 @@ import javax.mail.Message;
 import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.concurrent.Callable;
 
@@ -64,7 +63,7 @@ public class SaveMail implements Callable<Integer> {
 
         Desktop.getDesktop().browse(pdfFile.toURI());
 
-        return 0;
+        return DMExitCode.OK;
     }
 
     public void htmlToPdf(){

@@ -1,6 +1,7 @@
-package Commands.FolderCommands;
+package Commands.MailCommands;
 
 import Commands.CommandExecutor;
+import Commands.DMExitCode;
 import picocli.CommandLine.*;
 
 import javax.mail.*;
@@ -18,7 +19,7 @@ import java.util.concurrent.Callable;
 /**
  * Prindib valitud emaili sisu või avab vastava HTML faili brauseris
  */
-@Command(name = "attachments", mixinStandardHelpOptions = true)
+@Command(name = "attachments", description = {"Open or save the chosen email's attachments"})
 public class Attachments implements Callable<Integer> {
     @Parameters(arity = "1")
     int msgNumber;
@@ -52,7 +53,7 @@ public class Attachments implements Callable<Integer> {
                 case 1: save();
             }
         }
-        return 0;
+        return DMExitCode.OK;
     }
 
     public void getAttachments(Part p) throws MessagingException, IOException {

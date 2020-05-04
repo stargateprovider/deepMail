@@ -1,5 +1,6 @@
-package Commands.FolderCommands;
+package Commands.MailCommands;
 
+import Commands.DMExitCode;
 import picocli.CommandLine.*;
 
 import javax.mail.*;
@@ -11,7 +12,7 @@ import java.util.concurrent.Callable;
 /**
  * Prindib valitud emaili sisu või avab vastava HTML faili brauseris
  */
-@Command(name = "readmsg", mixinStandardHelpOptions = true)
+@Command(name = "readmsg", description = "Open and read a message")
 public class ReadMsg implements Callable<Integer> {
     @Parameters(arity = "1")
     int msgNumber;
@@ -25,10 +26,10 @@ public class ReadMsg implements Callable<Integer> {
     @Override
     public Integer call() throws IOException, MessagingException {
         Message[] currentMessages = folderNav.getCurrentMessages();
+        Message msg = currentMessages[currentMessages.length - msgNumber];
+        String msgContent = getText(msg);
 
-        String msgContent = getText(currentMessages[currentMessages.length - msgNumber]);
-
-        if (currentMessages[msgNumber - 1].isMimeType("multipart/*") && Desktop.isDesktopSupported()
+        if (msg.isMimeType("multipart/*") && Desktop.isDesktopSupported()
                 && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
 
             File tempFile = Files.createTempFile("msg", ".html").toFile();
@@ -40,7 +41,11 @@ public class ReadMsg implements Callable<Integer> {
         } else {
             System.out.println(msgContent);
         }
-        return 0;
+
+        if (!msg.isSet(Flags.Flag.SEEN)) {
+            msg.setFlag(Flags.Flag.SEEN, true);
+        }
+        return DMExitCode.OK;
     }
 
     /**
@@ -48,8 +53,6 @@ public class ReadMsg implements Callable<Integer> {
      * Return the primary text content of the message.
      */
     public static String getText(Part p) throws MessagingException, IOException {
-        boolean textIsHtml = false;
-
         if (p.isMimeType("text/*")) {
             /*InputStream inStream = MimeUtility.decode(p.getInputStream(), MimeUtility.getEncoding(p.getDataHandler()));
             //String s = (String) p.getContent();
@@ -61,8 +64,7 @@ public class ReadMsg implements Callable<Integer> {
             }
             //String s = new String(sb.toString().getBytes(), MimeUtility.getEncoding(p.getDataHandler()));
             System.out.println(p.getContentType());
-            String s = new String(((String)(p.getContent())).getBytes(), "iso-8859-15");
-            textIsHtml = p.isMimeType("text/html");*/
+            String s = new String(((String)(p.getContent())).getBytes(), "iso-8859-15");*/
             return (String) p.getContent();
         }
         if (p.isMimeType("multipart/alternative")) {
@@ -75,7 +77,6 @@ public class ReadMsg implements Callable<Integer> {
                 if (bp.isMimeType("text/plain")) {
                     if (text == null)
                         text = getText(bp);
-                    continue;
                 } else if (bp.isMimeType("text/html")) {
                     String s = getText(bp);
                     if (s != null)

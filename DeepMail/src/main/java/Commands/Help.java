@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
 /**
  * Kasutatav igas CommandExecutoris, et kuvada võimalikud commandid
  */
-@Command(name = "help", aliases = {"?"}, mixinStandardHelpOptions = true)
+@Command(name = "help", aliases = {"?"}, helpCommand = true)
 public class Help implements Callable<Integer> {
     String helpMsg;
 
@@ -18,6 +18,6 @@ public class Help implements Callable<Integer> {
     @Override
     public Integer call() {
         System.out.println(helpMsg);
-        return 0;
+        return DMExitCode.OK;
     }
 }

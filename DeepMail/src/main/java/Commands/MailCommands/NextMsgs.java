@@ -1,4 +1,4 @@
-package Commands.FolderCommands;
+package Commands.MailCommands;
 
 import picocli.CommandLine.*;
 import javax.mail.MessagingException;
@@ -8,7 +8,7 @@ import static java.lang.Integer.min;
 /**
  * Loeb argumendina antud arv järgmisi emaile, kui argumenti ei anta, siis default on 10 emaili.
  */
-@Command(name = "next", mixinStandardHelpOptions = true, description = "Show next messages")
+@Command(name = "next", description = "Show next messages")
 public class NextMsgs extends ScrollMessages {
     public NextMsgs(FolderNavigation folderNav) {
         super(folderNav);
@@ -25,5 +25,4 @@ public class NextMsgs extends ScrollMessages {
             System.out.println("Already at end of messages.");
         }
     }
-
 }

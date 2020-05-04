@@ -32,9 +32,9 @@ public class CommandAdder implements Callable<Integer> {
 
         }catch (IOException e){
             System.out.println("ERROR: Faili ei leitud"); //Teha/kasutada mõnda teist commandi error handlemiseks?!?
-            return 1;
+            return DMExitCode.SOFTWARE;
         }
 
-        return 0;
+        return DMExitCode.OK;
     }
 }

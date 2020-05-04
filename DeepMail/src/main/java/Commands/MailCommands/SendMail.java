@@ -1,6 +1,6 @@
-package Commands;
+package Commands.MailCommands;
 
-import Commands.FolderCommands.FolderNavigation;
+import Commands.DMExitCode;
 import Utilities.PGPUtilities;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPException;
@@ -28,7 +28,7 @@ import java.util.concurrent.Callable;
  * Süntaks: reply <vastava kirja jrk.> -b <kirja sisu> -e <tee PGP public võtmeni (RSA)> -f <tee manuseni> / write <kirja saaja> -t <kirja pealkiri> -b -f
  * Kasutamisnäide: write user@example.com -t pealkiri -b sisu -f C:\\Users\\user\\Desktop\\file.txt
  */
-@Command(name = "sendmail", mixinStandardHelpOptions = true)
+@Command(name = "sendmail")
 public class SendMail implements Callable<Integer> {
 
     @Option(names = {"-f", "--file"}, arity = "0..*", description = "Path to the attachment(s).")
@@ -62,9 +62,9 @@ public class SendMail implements Callable<Integer> {
 
     @Override
     public Integer call() throws MessagingException, NoSuchProviderException, IOException, PGPException {
-        if (CommandExecutor.credentials == null) {
+        if (EmailLogin.credentials == null) {
             System.out.println("Use the \"login\" command first!");
-            return 0;
+            return DMExitCode.OK;
         }
         Address[] to;
 
@@ -79,14 +79,14 @@ public class SendMail implements Callable<Integer> {
             to[0] = new InternetAddress(arg);
         }
         Properties props = System.getProperties();
-        props.setProperty("mail.smtp.host", CommandExecutor.credentials.getSmptServer());
+        props.setProperty("mail.smtp.host", EmailLogin.credentials.getSmptServer());
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.port", "587");
 
         Session session = Session.getInstance(props, null);
         MimeMessage msg = new MimeMessage(session);
-        msg.setFrom(CommandExecutor.credentials.getUsername());
+        msg.setFrom(EmailLogin.credentials.getUsername());
         msg.setRecipients(Message.RecipientType.TO, to);
         msg.setSubject(title);
         if (!encrypt.equals("")) {
@@ -112,10 +112,10 @@ public class SendMail implements Callable<Integer> {
             }
             msg.setContent(multipart);
         }
-        Transport.send(msg,CommandExecutor.credentials.getUsername(),String.valueOf(CommandExecutor.credentials.getPassword()));
+        Transport.send(msg,EmailLogin.credentials.getUsername(),String.valueOf(EmailLogin.credentials.getPassword()));
         file = new ArrayList<>();
         body = "";
-        return 0;
+        return DMExitCode.OK;
     }
 }
 

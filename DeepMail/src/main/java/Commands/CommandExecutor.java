@@ -1,6 +1,5 @@
 package Commands;
 
-
 import picocli.CommandLine;
 
 import java.io.Console;
@@ -9,15 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
-import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-/**x
+/**
  * Loob programmi sees käsurea, millelt võib etteantud käske sisestada
  */
 public class CommandExecutor {
-    static Credentials credentials = null;
     HashMap<String, Callable<Integer>> commands;
     static Scanner globalScanner = new Scanner(System.in);
 
@@ -37,8 +33,8 @@ public class CommandExecutor {
 
     // Käivitab käsurea
     public void run() {
-        int result = 0;
-        while (result != -1) {
+        int result = DMExitCode.USAGE;
+        while (result != DMExitCode.EXITMENU) {
             System.out.print("> ");
             String input = globalScanner.nextLine();
             result = execute(input);
@@ -47,7 +43,7 @@ public class CommandExecutor {
 
     public int execute(String cmdName, String argsString) {
         if (cmdName.isEmpty()) {
-            return 0;
+            return DMExitCode.OK;
         }
         if (commands.containsKey(cmdName)) {
             String[] options = new String[0];
@@ -62,7 +58,7 @@ public class CommandExecutor {
         }
 
         System.out.println("Command '" + cmdName + "' not found.");
-        return 2;
+        return DMExitCode.USAGE;
     }
 
     public int execute(String inputStr) {
@@ -77,8 +73,8 @@ public class CommandExecutor {
     public static int quickChoice(List<String> options, String separator) {
         String optionsString = "";
         for (int i = 0; i < options.size(); i++) {
-            optionsString += (i+1) + ") " + options.get(i);
-            if (i+1 < options.size()) {
+            optionsString += (i + 1) + ") " + options.get(i);
+            if (i + 1 < options.size()) {
                 optionsString += separator;
             }
         }
