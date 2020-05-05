@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * In this class we have all the methods needed to save mails in different file formats like html, pdf, docx and so on
@@ -38,26 +39,32 @@ public class SaveMail implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        mailToPdf();
+        return DMExitCode.OK;
+    }
 
+
+
+    public CompletableFuture<File> mailToPdf() throws Exception{
+        CompletableFuture<File> pdf = new CompletableFuture<>();
+        new Thread(() -> {
+            try {
+                System.out.println("File saving has begun!");
+                pdf.complete(htmlToPdf());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+        return pdf;
+    }
+
+    private File htmlToPdf() throws Exception {
         Message[] currentMsgs = folderNav.getCurrentMessages();
 
         Message message = currentMsgs[currentMsgs.length-msgNumber];
 
-
-        /*Document document = new Document();
-
-        PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
-
-        document.open();
-
-        Font font = FontFactory.getFont(FontFactory.COURIER, 10, BaseColor.BLACK);
-
-        Paragraph chunk = new Paragraph(ReadMsg.getText(message), font);
-
-        document.add(chunk);
-        document.close();*/
-
         PdfRendererBuilder builder = new PdfRendererBuilder();
+        builder.useFastMode();
 
         File pdfFile = Files.createTempFile("test", ".pdf").toFile();
 
@@ -69,19 +76,9 @@ public class SaveMail implements Callable<Integer> {
         builder.toStream(new FileOutputStream(pdfFile));
         builder.run();
 
-       /* File tempFile = Files.createTempFile("msg", ".xhtml").toFile();
-        try (FileWriter writer = new FileWriter(tempFile)) {
-            writer.write("Hello world");
-        }*/
-
-
-
         Desktop.getDesktop().browse(pdfFile.toURI());
-
-        return DMExitCode.OK;
-    }
-
-    public void htmlToPdf(){
+        System.out.println("File saving has ended");
+        return pdfFile;
     }
 
 }
