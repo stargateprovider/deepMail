@@ -20,5 +20,13 @@
     <orderEntry type="library" name="Maven: org.bouncycastle:bcprov-jdk15on:1.57" level="project" />
     <orderEntry type="library" name="Maven: org.bouncycastle:bcpg-jdk15on:1.57" level="project" />
     <orderEntry type="library" name="Maven: com.itextpdf:itextpdf:5.5.10" level="project" />
+    <orderEntry type="library" name="Maven: com.openhtmltopdf:openhtmltopdf-core:1.0.2" level="project" />
+    <orderEntry type="library" name="Maven: com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.pdfbox:pdfbox:2.0.19" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.pdfbox:fontbox:2.0.19" level="project" />
+    <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.pdfbox:xmpbox:2.0.19" level="project" />
+    <orderEntry type="library" name="Maven: de.rototor.pdfbox:graphics2d:0.25" level="project" />
+    <orderEntry type="library" name="Maven: org.jsoup:jsoup:1.13.1" level="project" />
   </component>
 </module>

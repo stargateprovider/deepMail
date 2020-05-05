@@ -5,6 +5,9 @@ import Commands.DMExitCode;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import picocli.CommandLine;
 
 import javax.mail.Message;
@@ -12,6 +15,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 /**
@@ -40,8 +44,7 @@ public class SaveMail implements Callable<Integer> {
         Message message = currentMsgs[currentMsgs.length-msgNumber];
 
 
-        Document document = new Document();
-        File pdfFile = Files.createTempFile("test", ".pdf").toFile();
+        /*Document document = new Document();
 
         PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
 
@@ -52,7 +55,19 @@ public class SaveMail implements Callable<Integer> {
         Paragraph chunk = new Paragraph(ReadMsg.getText(message), font);
 
         document.add(chunk);
-        document.close();
+        document.close();*/
+
+        PdfRendererBuilder builder = new PdfRendererBuilder();
+
+        File pdfFile = Files.createTempFile("test", ".pdf").toFile();
+
+        Document document = Jsoup.parse(Objects.requireNonNull(ReadMsg.getText(message)));
+        document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+
+        builder.withHtmlContent(document.html(), pdfFile.toURI().toURL().toString());
+
+        builder.toStream(new FileOutputStream(pdfFile));
+        builder.run();
 
        /* File tempFile = Files.createTempFile("msg", ".xhtml").toFile();
         try (FileWriter writer = new FileWriter(tempFile)) {
