@@ -1,0 +1,22 @@
+{
+  "accounts" : [ {
+    "username" : "a",
+    "hashedPassword" : "",
+    "emailsList" : [ ]
+  }, {
+    "username" : "test2",
+    "hashedPassword" : "dGVzdDE=",
+    "emailsList" : [ ]
+  }, {
+    "username" : "test",
+    "hashedPassword" : "dGVzdDE=",
+    "emailsList" : [ {
+      "address" : "minatestin123@gmail.com",
+      "encryptedPassword" : "QWphbGVodDE="
+    } ]
+  }, {
+    "username" : "kala",
+    "hashedPassword" : "a2FsYTE=",
+    "emailsList" : [ ]
+  } ]
+}

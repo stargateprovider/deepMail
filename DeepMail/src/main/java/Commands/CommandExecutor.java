@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  */
 public class CommandExecutor {
     HashMap<String, Callable<Integer>> commands;
-    static Scanner globalScanner = new Scanner(System.in);
+    final static Scanner globalScanner = new Scanner(System.in);
 
     // Loob antud commandidega käsurea
     public CommandExecutor(HashMap<String, Callable<Integer>> commands) {
@@ -24,11 +24,18 @@ public class CommandExecutor {
         Back backCmd = new Back();
         this.commands.put("back", backCmd);
         this.commands.put("close", backCmd);
-        String helpMsg = "Available commands:\n" + String.join("|", commands.keySet().toArray(String[]::new));
 
+        String helpMsg = "Available commands:\n" + String.join("|", commands.keySet().toArray(String[]::new));
         Help helpCmd = new Help(helpMsg);
         this.commands.put("help", helpCmd);
         this.commands.put("?", helpCmd);
+    }
+    public CommandExecutor() {
+        this(new HashMap<>());
+    }
+
+    public void add(String name, Callable<Integer> command) {
+        commands.put(name, command);
     }
 
     // Käivitab käsurea

@@ -1,12 +1,18 @@
 import Commands.MailCommands.EmailLogin;
 import Commands.MailCommands.SendMail;
+import DeepmailServerHost.ShutdownServer;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import picocli.CommandLine;
 import Commands.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
@@ -14,14 +20,17 @@ public class Main {
     public static void main(String[] args) {
         printHeader(30);
         //test();
-
+        //ObjectReader reader = new ObjectMapper().reader().forType(new TypeReference<List<Account>>(){});
+        LoginAccount currentLogin = new LoginAccount();
         HashMap<String, Callable<Integer>> commands = new HashMap<>(){{
-            put("login", new EmailLogin());
+            put("readmail", new EmailLogin(currentLogin));
             put("sendmail", new SendMail());
             put("echo", new PrintEcho());
             put("createaccount", new Account());
-            put("loginaccount", new LoginAccount());
-            put("addemail", new Email());
+            put("login", currentLogin);
+            put("logout", new Logout(currentLogin));
+            put("addemail", new Email(currentLogin));
+            put("closeserver", new ShutdownServer());
             //put("test", Main::test);
         }};
         //commands.put("addCommand", new CommandAdder());

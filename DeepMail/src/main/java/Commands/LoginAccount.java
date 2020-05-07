@@ -2,54 +2,58 @@ package Commands;
 
 import picocli.CommandLine.*;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 
-@Command(name = "loginaccount", description = {"Login to your DeepMail account"})
+@Command(name = "loginaccount", description = "Login to your DeepMail account")
 public class LoginAccount implements Callable<Integer> {
 
-    @Parameters(index = "0")
-    private static String username;
+    @Parameters(description = "DeepMail username")
+    private String username;
 
-    @Parameters(index = "1")
-    private static String password;
+    private boolean loggedIn;
+    private Account account;
 
-    private static boolean LoggedIn = false;
-    private static Account account;
-
+    public LoginAccount() {
+        loggedIn = false;
+    }
 
     @Override
     public Integer call() {
         if(isLoggedIn()){
+            // TODO: Logouti kohe siit?
             System.out.println("You are already logged in. Please logout first!");
             return DMExitCode.USAGE;
         }
 
-        Account accountLogin = Account.getAccount(username, password);
+        Account accountLogin = Account.getAccount(username, CommandExecutor.readPassword());
         if(accountLogin == null){
-            System.out.println("Credentials were wrong or account doensn't exist");
+            System.out.println("Credentials were wrong or account doesn't exist");
             return DMExitCode.USAGE;
         }
 
         System.out.println("Logged in as " + accountLogin.getUsername());
-
         account = accountLogin;
-
-        LoggedIn = true;
-        return DMExitCode.SOFTWARE;
-
+        loggedIn = true;
+        return DMExitCode.OK;
     }
 
-    public static Account getAccount(){ return account;}
-
-    public static String getUsername() {
-        return username;
+    public Account getAccount(){
+        return account;
     }
 
-    public static String getPassword() {
-        return password;
+    public List<Email> getEmailsList() {
+        return account.getEmailsList();
     }
 
-    public static boolean isLoggedIn() {
-        return LoggedIn;
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
+
+    public void logout() {
+        account.saveAccount();
+        loggedIn = false;
+        account = null;
+
     }
 }

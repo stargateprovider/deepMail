@@ -11,6 +11,7 @@ import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -22,8 +23,9 @@ import picocli.CommandLine.Option;
 @Command(name = "login", description = {"Login to a mail account"})
 public class EmailLogin implements Callable<Integer> {
     @Option(names = {"-u", "--user"}, arity = "1", defaultValue = "", description = {"Email address"})
-    String username;
+    private String username;
 
+    private LoginAccount currentLogin;
     static Credentials credentials = null;
     public Store store;
     public FolderNavigation folderNav;
@@ -46,13 +48,18 @@ public class EmailLogin implements Callable<Integer> {
         (new CommandLine(new EmailLogin())).execute(args);
     }
 
+    public EmailLogin(LoginAccount currentLogin) {
+        this.currentLogin = currentLogin;
+    }
+    public EmailLogin() {}
+
     public Integer call() throws MessagingException {
         char[] password = new char[0];
 
-        if (LoginAccount.isLoggedIn()) {
-            Account account = LoginAccount.getAccount();
-            List<String> emailAddresses = account.getEmailsList().stream()
-                    .map(Email::getEmailDomain)
+        if (currentLogin.isLoggedIn()) {
+            List<Email> emailsList = currentLogin.getEmailsList();
+            List<String> emailAddresses = emailsList.stream()
+                    .map(Email::getAddress)
                     .collect(Collectors.toList());
 
             if (!emailAddresses.isEmpty()) {
@@ -60,14 +67,14 @@ public class EmailLogin implements Callable<Integer> {
                 int index = CommandExecutor.quickChoice(emailAddresses, "\n");
 
                 username = emailAddresses.get(index);
-                password = (new String((account.getEmailsList().get(index)).getHashedPassword())).toCharArray();
+                password = new String(emailsList.get(index).getEncryptedPassword()).toCharArray();
             }
         }
 
-        if (username.isEmpty()) {
+        while (username.isEmpty()) {
             username = CommandExecutor.quickInput("Enter email address: ");
         }
-        if (password.length == 0) {
+        while (password.length == 0) {
             password = CommandExecutor.readPassword();
         }
 
@@ -89,13 +96,14 @@ public class EmailLogin implements Callable<Integer> {
             folderNav = new FolderNavigation(this);
             folderNav.call();
 
-            HashMap<String, Callable<Integer>> commands = new HashMap();
+            HashMap<String, Callable<Integer>> commands = new HashMap<>();
             commands.put("selectfolder", folderNav);
             commands.put("folder", new GetCurrentFolder(folderNav));
             commands.put("read", new ReadMsg(folderNav));
             commands.put("attachments", new Attachments(folderNav));
             commands.put("next", new NextMsgs(folderNav));
             commands.put("previous", new PreviousMsgs(folderNav));
+            commands.put("show", new ShowMessages(folderNav));
             commands.put("search", new SearchMsgs(folderNav));
             commands.put("delete", new DeleteMsg(folderNav));
             commands.put("move", new MoveMsg(folderNav));
