@@ -103,7 +103,7 @@ public class EmailLogin implements Callable<Integer> {
             commands.put("attachments", new Attachments(folderNav));
             commands.put("next", new NextMsgs(folderNav));
             commands.put("previous", new PreviousMsgs(folderNav));
-            commands.put("show", new ShowMessages(folderNav));
+            //commands.put("show", new ShowMessages(folderNav));
             commands.put("search", new SearchMsgs(folderNav));
             commands.put("delete", new DeleteMsg(folderNav));
             commands.put("move", new MoveMsg(folderNav));

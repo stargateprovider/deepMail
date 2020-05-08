@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public class Server {
 
     private static ConcurrentMap<String, Account> accounts;
-    private static final File accountsFile = new File("Accounts.json");
+    private static final File accountsFile = new File("DeepMail/Accounts.json");
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static void main(String[] args) {
