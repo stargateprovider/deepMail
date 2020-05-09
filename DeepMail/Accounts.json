@@ -1,22 +1,10 @@
 {
   "accounts" : [ {
-    "username" : "a",
-    "hashedPassword" : "",
-    "emailsList" : [ ]
-  }, {
-    "username" : "test2",
-    "hashedPassword" : "dGVzdDE=",
-    "emailsList" : [ ]
-  }, {
-    "username" : "test",
-    "hashedPassword" : "dGVzdDE=",
+    "username" : "esimene",
+    "hashedPassword" : "in8rUHWpE1DdekBqAAqN5RCU2Z+E7ka0z1krOIb4AsM=",
     "emailsList" : [ {
-      "address" : "minatestin123@gmail.com",
-      "encryptedPassword" : "QWphbGVodDE="
+      "encryptedPassword" : "eHh2d3V2ZnhscnVxcXJkeA==",
+      "address" : "varblane.peos@gmail.com"
     } ]
-  }, {
-    "username" : "kala",
-    "hashedPassword" : "a2FsYTE=",
-    "emailsList" : [ ]
   } ]
 }

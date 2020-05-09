@@ -29,7 +29,7 @@ public class Main {
             put("createaccount", new Account());
             put("login", currentLogin);
             put("logout", new Logout(currentLogin));
-            put("addemail", new Email(currentLogin));
+            put("addemail", new AddEmail(currentLogin));
             put("closeserver", new ShutdownServer());
             //put("test", Main::test);
         }};

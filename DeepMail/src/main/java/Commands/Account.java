@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,13 +31,14 @@ public class Account implements Callable<Integer>, Serializable {
 
             out.writeInt(1);
             out.writeUTF(username);
-            out.writeInt(password.length);
-            out.write(hashPassword(password));
+            byte[] hpw = hashPassword(password);
+            out.writeInt(hpw.length);
+            out.write(hpw);
             out.flush();
 
             return (Account) in.readObject();
 
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
             e.printStackTrace();
             return null;
         }
@@ -85,7 +88,7 @@ public class Account implements Callable<Integer>, Serializable {
             out.writeObject(this);
             out.flush();
 
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException e) {
             System.out.println(e.getMessage());
             return DMExitCode.SOFTWARE;
         }
@@ -106,10 +109,12 @@ public class Account implements Callable<Integer>, Serializable {
         }
     }
 
-    private static byte[] hashPassword(char[] password) {
+    public static byte[] hashPassword(char[] password) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
         ByteBuffer buf = StandardCharsets.UTF_8.encode(CharBuffer.wrap(password));
         byte[] hashed = new byte[buf.limit()];
         buf.get(hashed);
+        hashed = digest.digest(hashed);
         return hashed;
     }
 
