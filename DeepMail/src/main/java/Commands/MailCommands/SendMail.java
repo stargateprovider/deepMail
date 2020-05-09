@@ -70,6 +70,12 @@ public class SendMail implements Callable<Integer> {
 
         if (folderNav != null) {
             Message[] currentMessages = folderNav.getCurrentMessages();
+            Enumeration<Header> headers = currentMessages[currentMessages.length - Integer.parseInt(arg)].getAllHeaders();
+            while (headers.hasMoreElements()) {
+                Header header = headers.nextElement();
+                System.out.println(header);
+            }
+
             to = currentMessages[currentMessages.length - Integer.parseInt(arg)].getReplyTo();
             if (title.equals("")) {
                 title = "RE: " + currentMessages[currentMessages.length - Integer.parseInt(arg)].getSubject();

@@ -111,6 +111,7 @@ public class EmailLogin implements Callable<Integer> {
             commands.put("save", new SaveMail(folderNav));
             commands.put("write", new SendMail());
             commands.put("logout", new Back());
+            commands.put("checkauth", new EmailHeaders(folderNav));
 
             CommandExecutor cmdExecutor = new CommandExecutor(commands);
             cmdExecutor.run();

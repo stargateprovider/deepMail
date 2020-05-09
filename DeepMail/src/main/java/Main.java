@@ -24,7 +24,7 @@ public class Main {
         LoginAccount currentLogin = new LoginAccount();
         HashMap<String, Callable<Integer>> commands = new HashMap<>(){{
             put("readmail", new EmailLogin(currentLogin));
-            put("sendmail", new SendMail());
+            //put("sendmail", new SendMail());
             put("echo", new PrintEcho());
             put("createaccount", new Account());
             put("login", currentLogin);
