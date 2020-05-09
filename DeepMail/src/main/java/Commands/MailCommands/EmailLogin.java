@@ -1,12 +1,20 @@
 package Commands.MailCommands;
 
 import Commands.*;
+
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -53,7 +61,7 @@ public class EmailLogin implements Callable<Integer> {
     }
     public EmailLogin() {}
 
-    public Integer call() throws MessagingException {
+    public Integer call() throws MessagingException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         char[] password = new char[0];
 
         if (currentLogin.isLoggedIn()) {
@@ -66,8 +74,13 @@ public class EmailLogin implements Callable<Integer> {
                 System.out.println("Choose your email:");
                 int index = CommandExecutor.quickChoice(emailAddresses, "\n");
 
+                SecretKeySpec keySpec = new SecretKeySpec(currentLogin.getPw(), "Blowfish");
+                Cipher cipher = Cipher.getInstance("Blowfish");
+                cipher.init(Cipher.DECRYPT_MODE, keySpec);
+                byte[] decryptedPassword = cipher.doFinal(emailsList.get(index).getEncryptedPassword());
+
                 username = emailAddresses.get(index);
-                password = new String(emailsList.get(index).getEncryptedPassword()).toCharArray();
+                password = new String(decryptedPassword).toCharArray();
             }
         }
 
