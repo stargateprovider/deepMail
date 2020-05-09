@@ -10,6 +10,7 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import org.apache.pdfbox.io.RandomAccessFile;
 import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.printing.PDFPageable;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -17,10 +18,12 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.apache.poi.*;
 import picocli.CommandLine;
 
 import javax.mail.Message;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -99,7 +102,16 @@ public class SaveMail implements Callable<Integer> {
             pw.print(parsedText);
             pw.close();
 
-        }else{
+        }else if(filename.equals("print")){
+            PDDocument document = PDDocument.load(pdfFile.get());
+            PrintService printService = PrintServiceLookup.lookupDefaultPrintService();
+            if(printService != null){
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setPageable(new PDFPageable(document));
+                job.setPrintService(printService);
+                job.print();
+            }
+        } else{
             //create pdf
             FileChannel src = new FileInputStream(pdfFile.get()).getChannel();
             FileChannel dest = new FileOutputStream(newFile).getChannel();
