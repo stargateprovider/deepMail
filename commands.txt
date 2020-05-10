@@ -1,3 +1,0 @@
-printecho PrintEcho
-readmail ReadMail
-login Login

@@ -39,25 +39,6 @@ public class Main {
         cmdExecutor.run();
     }
 
-    private static void readCommands(HashMap<String, Callable<Integer>> commands) {
-        try(Scanner scanner = new Scanner(new File("commands.txt"))){
-            while (scanner.hasNextLine()){
-                String[] lineData = scanner.nextLine().split(" ");
-                try {
-                    Class<?> cl = Class.forName("Commands." + lineData[1]); //Kõik commandid peavad olema commands packages
-                    commands.put(lineData[0],(Callable<Integer>) cl.getConstructor().newInstance());
-                } catch (ClassNotFoundException | NoSuchMethodException e) {
-                    System.out.println("Failed to read class from name : " + lineData[1]);
-                } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                    System.out.println("Failed to create command Object from class: " + lineData[1]);
-                }
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("Commands file not found");
-
-        }
-    }
-
     public static void printHeader(int width) {
         System.out.println("=".repeat(width));
         System.out.printf("%" + width / 2 + "s%-" + width / 2 + "s\n", "Deep", "Mail");
