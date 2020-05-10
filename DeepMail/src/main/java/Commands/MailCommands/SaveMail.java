@@ -59,7 +59,11 @@ public class SaveMail implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
-        CompletableFuture<File> pdfFile = mailToPdf();
+        CompletableFuture<File> pdfFile = null;
+
+        if (!filename.endsWith(".html")){
+            pdfFile = mailToPdf();
+        }
         String basedir = System.getProperty("user.home");
         File newFile = new File(basedir + "/" + filename);
 
@@ -113,7 +117,16 @@ public class SaveMail implements Callable<Integer> {
                 job.setPrintService(printService);
                 job.print();
             }
-        } else{
+        }else if(filename.endsWith(".html")){
+
+            Message[] currentMsgs = folderNav.getCurrentMessages();
+
+            Message message = currentMsgs[currentMsgs.length-msgNumber];
+            FileWriter f = new FileWriter(newFile);
+            f.write(ReadMsg.getText(message));
+            f.flush();
+            System.out.println(filename + " is created!");
+        }else{
             //create pdf
             FileChannel src = new FileInputStream(pdfFile.get()).getChannel();
             FileChannel dest = new FileOutputStream(newFile).getChannel();
@@ -155,10 +168,6 @@ public class SaveMail implements Callable<Integer> {
         f.write(ReadMsg.getText(message));
         f.flush();
 
-
-       // Document document = Jsoup.parse(Objects.requireNonNull(ReadMsg.getText(message)));
-       // document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
-       // document.outputSettings().escapeMode(Entities.EscapeMode.xhtml);
 
         Tidy tidy = new Tidy();
         tidy.setXHTML(true);
