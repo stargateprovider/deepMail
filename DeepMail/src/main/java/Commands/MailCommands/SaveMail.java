@@ -18,18 +18,19 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Entities;
+import org.w3c.tidy.Tidy;
 import picocli.CommandLine;
 
 import javax.mail.Message;
-import javax.print.PrintService;
-import javax.print.PrintServiceLookup;
+import javax.print.*;
+import javax.print.attribute.HashPrintRequestAttributeSet;
 import java.awt.print.PrinterJob;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -103,6 +104,7 @@ public class SaveMail implements Callable<Integer> {
             pw.close();
 
         }else if(filename.equals("print")){
+            newFile.delete();
             PDDocument document = PDDocument.load(pdfFile.get());
             PrintService printService = PrintServiceLookup.lookupDefaultPrintService();
             if(printService != null){
@@ -146,11 +148,23 @@ public class SaveMail implements Callable<Integer> {
         builder.useFastMode();
 
         File pdfFile = Files.createTempFile("test", ".pdf").toFile();
+        File htmlfile = Files.createTempFile("test", ".html").toFile();
+        File xhtmlfile = Files.createTempFile("xtest", ".xhtml").toFile();
 
-        Document document = Jsoup.parse(Objects.requireNonNull(ReadMsg.getText(message)));
-        document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+        FileWriter f = new FileWriter(htmlfile);
+        f.write(ReadMsg.getText(message));
+        f.flush();
 
-        builder.withHtmlContent(document.html(), pdfFile.toURI().toURL().toString());
+
+       // Document document = Jsoup.parse(Objects.requireNonNull(ReadMsg.getText(message)));
+       // document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+       // document.outputSettings().escapeMode(Entities.EscapeMode.xhtml);
+
+        Tidy tidy = new Tidy();
+        tidy.setXHTML(true);
+        tidy.parse(new FileInputStream(htmlfile), new FileOutputStream(xhtmlfile));
+
+        builder.withHtmlContent(Files.readString(Path.of(xhtmlfile.toURI())), pdfFile.toURI().toURL().toString());
 
         builder.toStream(new FileOutputStream(pdfFile));
         builder.run();

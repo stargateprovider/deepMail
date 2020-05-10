@@ -144,6 +144,11 @@
             <artifactId>poi-scratchpad</artifactId>
             <version>3.15</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.jtidy</groupId>
+            <artifactId>jtidy</artifactId>
+            <version>1.0.2</version>
+        </dependency>
 
     </dependencies>
 
