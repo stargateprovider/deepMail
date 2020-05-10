@@ -1,11 +1,9 @@
 package Commands;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import org.w3c.dom.ls.LSOutput;
+import Utilities.SharedFile;
 import picocli.CommandLine.Command;
 
 import java.io.*;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
@@ -14,20 +12,19 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.nio.file.Path;
+import java.util.*;
 
 @Command(name = "newaccount", description = "Create a new DeepMail account")
-public class Account implements Callable<Integer>, Serializable {
+public class Account extends ServerCommunicator implements Serializable {
     private String username;
     private byte[] hashedPassword;
 
     private List<Email> emailsList;
-    private List<FilePermission> filePermissions;
+    private Map<String, SharedFile> files;
 
     public static Account getAccount(String username, char[] password) {
-        try (final Socket socket = new Socket("127.0.0.1", 1337);
-             final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+        accessServer((in, out) -> {
 
             out.writeInt(1);
             out.writeUTF(username);
@@ -36,27 +33,18 @@ public class Account implements Callable<Integer>, Serializable {
             out.write(hpw);
             out.flush();
 
-            return (Account) in.readObject();
-
-        } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return null;
-        }
+            returnObject = in.readObject();
+        });
+        return (Account) returnObject;
     }
 
     @Override
     public Integer call() {
-        return createAccount();
-    }
-
-    private int createAccount() {
-        // TODO: Salvesta serveriaadress kuhugi
-        try (final Socket socket = new Socket("127.0.0.1", 1337);
-             final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+        return accessServer((in, out) -> {
 
             out.writeInt(3);
-            usernameValidation: do {
+            usernameValidation:
+            do {
                 username = CommandExecutor.quickInput("> Write your username: ");
                 out.writeUTF(username);
                 out.flush();
@@ -83,30 +71,25 @@ public class Account implements Callable<Integer>, Serializable {
             } while (true);
 
             emailsList = new ArrayList<>();
-            filePermissions = new ArrayList<>();
+            files = new LinkedHashMap<>();
             hashedPassword = hashPassword(password);
             out.writeObject(this);
             out.flush();
 
-        } catch (IOException | NoSuchAlgorithmException e) {
-            System.out.println(e.getMessage());
-            return DMExitCode.SOFTWARE;
-        }
-        return DMExitCode.OK;
+        });
     }
 
-    void saveAccount() {
-        try (Socket socket = new Socket("127.0.0.1", 1337);
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
-
+    public void sync() {
+        accessServer((in, out) -> {
             out.writeInt(2);
             out.writeObject(this);
             out.flush();
+            returnObject = in.readObject();
+        });
+        Account synced = (Account) returnObject;
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Uuendatakse vajalikud väljad:
+        this.files = synced.files;
     }
 
     public static byte[] hashPassword(char[] password) throws NoSuchAlgorithmException {
@@ -144,6 +127,33 @@ public class Account implements Callable<Integer>, Serializable {
 
     public void addEmail(Email email) {
         this.emailsList.add(email);
-        this.emailsList.forEach(System.out::println);
+        this.sync();
+    }
+
+    public Map<String, SharedFile> getFiles() {
+        return Map.copyOf(files);
+    }
+    public void setFiles(Map<String, SharedFile> files) {
+        this.files = files;
+    }
+
+    public void addFile(SharedFile file) {
+        files.put(file.toString(), file);
+    }
+    public void addFile(String filename, boolean readonly) {
+        addFile(new SharedFile(this.username, filename, readonly));
+    }
+    public void addFile(Path path) {
+        addFile(new SharedFile(username, path));
+    }
+
+    public void removeFile(String filename) {
+        files.remove(filename);
+        Set<String> fileKeys = Set.copyOf(files.keySet());
+        for (String key : fileKeys) {
+            if (key.contains(filename)) {
+                files.remove(key);
+            }
+        }
     }
 }

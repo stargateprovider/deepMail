@@ -4,6 +4,7 @@ import picocli.CommandLine.*;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -59,7 +60,7 @@ public class LoginAccount implements Callable<Integer> {
     }
 
     public void logout() {
-        account.saveAccount();
+        account.sync();
         loggedIn = false;
         account = null;
 

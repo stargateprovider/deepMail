@@ -10,6 +10,7 @@ public final class DMExitCode {
     public static final int OK = ExitCode.OK;
     public static final int SOFTWARE = ExitCode.SOFTWARE;
     public static final int USAGE = ExitCode.USAGE;
+    public static final int PERMISSION = 3;
 }
 
 /**
