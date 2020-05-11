@@ -1,6 +1,7 @@
 import Commands.MailCommands.EmailLogin;
 import Commands.FileCommands.FileClient;
 import Commands.AdminCommands.ShutdownServer;
+import Commands.MailCommands.SendFake;
 import picocli.CommandLine;
 import Commands.*;
 
@@ -16,6 +17,7 @@ public class Main {
         HashMap<String, Callable<Integer>> commands = new HashMap<>(){{
             put("readmail", new EmailLogin(currentLogin));
             //put("sendmail", new SendMail());
+            put("sendfake", new SendFake());
             put("echo", new PrintEcho());
             put("createaccount", new Account());
             put("login", currentLogin);
